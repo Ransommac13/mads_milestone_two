@@ -7,3 +7,5 @@ __pycache__
 .vscode/
 
 data/external/
+data/interim/lottery_sales_2025/
+data/interim/combined_lottery_sales_2025.parquet

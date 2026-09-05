@@ -4,101 +4,105 @@ ingest.py
 """
 
 from sodapy import Socrata
+from dotenv import load_dotenv
 import pandas as pd
-import geopandas as gpd
-import censusgeocode as cg
+import duckdb
 
 from pathlib import Path
 
-def ingest_lottery_sales_data():
-    """
-    Ingests lottery sales data from the New York State Open Data API and returns a pandas DataFrame.
-    """
+from config import SOCRATA_APP_TOKEN, INTERIM_PARQUET_PATH, COMBINED_PARQUET_PATH
 
-    client = Socrata("data.ny.gov",
-                    "QlaypJL6gh3tXg9URRakveTqg",
-                    username="macleith@umich.edu",
-                    password="Monkeybrains13")
+load_dotenv()
 
-    test_results = client.get("xyvi-fbb9", limit=2000)
+def create_Socrata_client():
 
-    return test_results
-
-def sep_sales_and_location_data(api_results):
-    """Takes the results from the API and separates the sales data and location data into two separate DataFrames."""
-
-    all_data = pd.DataFrame(api_results)
-
-    location_data = all_data[["agtno", "busnm", "busaddr", "buscity", "buszip", "georeference",
-                              ":@computed_region_kjdx_g34t", ":@computed_region_yamh_8v7k", ":@computed_region_wbg7_3whc"]]
-
-
-    location_data['coordinates'] = location_data['georeference'].str.get('coordinates')
-    location_data['longitude'] = location_data['coordinates'].str[0]
-    location_data['latitude'] = location_data['coordinates'].str[1]
-    location_data = location_data.drop(columns=["georeference", "coordinates"])
-    location_data = location_data.drop_duplicates(subset=["agtno"])
-
-    sales_data = all_data.drop(columns=["busnm", "busaddr", "buscity", "buszip", "georeference",
-                                        ":@computed_region_kjdx_g34t", ":@computed_region_yamh_8v7k", ":@computed_region_wbg7_3whc"])
-
-    return location_data, sales_data
-
-def geocode_missing_lat_longs(location_df: pd.DataFrame):
-    """Geocodes missing latitude and longitude values in the location DataFrame using the Census Geocoder API."""
-
-    missing_locations = location_df[location_df['latitude'].isna() | location_df['longitude'].isna()]
-
-    for index, row in missing_locations.iterrows():
-        agtno = str(row['agtno']).strip()
-        street = str(row['busaddr']).strip()
-        city = str(row['buscity']).strip()
-        zip_code = str(row['buszip']).strip()
-        try:
-            result = cg.address(street, city=city, state='NY', zip_code=zip_code, returntype='locations')
-            if result:
-                location_df.at[index, 'latitude'] = result[0]['coordinates']['y']
-                location_df.at[index, 'longitude'] = result[0]['coordinates']['x']
-            else:
-                print(f"No geocoding result for agent number {agtno} at address {repr(street)}, {repr(city)}, {repr(zip_code)}")
-        except Exception as e:
-            print(f"Error geocoding address for agent number {agtno}: {e}")
-
-    return location_df
-
-def convert_to_geodataframe(location_data):
-    """Converts the location data DataFrame to a GeoDataFrame."""
-
-    gdf = gpd.GeoDataFrame(
-        location_data,
-        geometry=gpd.points_from_xy(location_data.longitude, location_data.latitude),
-        crs="EPSG:4326"
+    return Socrata(
+        "data.ny.gov",
+        SOCRATA_APP_TOKEN,
+        timeout=120
     )
 
-    return gdf
+def ingest_2025_sales_data(
+    client: Socrata,
+    output_directory: Path,
+    page_size: int = 50000
+):
+
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    where_clause = (
+        "bus_day >= '2025-01-01T00:00:00.000' "
+        "AND bus_day < '2026-01-01T00:00:00.000'"
+    )
+
+    offset = 0
+    page_number = 0
+    total_downloaded = 0
+
+    while True:
+
+        records = client.get(
+            "xyvi-fbb9",
+            where=where_clause,
+            limit=page_size,
+            offset=offset,
+            order="bus_day ASC, agtno ASC"
+        )
+
+        if not records:
+            break
+
+        page_df = pd.DataFrame.from_records(records)
+
+        output_path = (
+            output_directory
+            / f"lottery_2025_part_{page_number:04d}.parquet"
+        )
+
+        page_df.to_parquet(output_path, index=False, engine="pyarrow", compression="zstd")
+
+        rows_received = len(page_df)
+        total_downloaded += rows_received
+        if rows_received < page_size:
+            break
+
+        offset += rows_received
+        page_number += 1
+
+    return total_downloaded
+
+def validate_parquet_pages():
+
+    validation_results = duckdb.sql("""
+        SELECT
+            COUNT(*) AS row_count,
+            MIN(bus_day) AS earliest_date,
+            MAX(bus_day) AS latest_date
+        FROM
+            read_parquet(
+            'data/interim/lottery_sales_2025/*.parquet',
+            union_by_name=true
+        )
+    """).df()
+
+    return validation_results
+
+def combine_parquet_pages():
+
+    combined_parquet_path = Path(COMBINED_PARQUET_PATH)
+    combined_parquet_path.parent.mkdir(parents=True, exist_ok=True)
+
+    parquet_pages_dir = Path(INTERIM_PARQUET_PATH)
+    parquet_input_pattern = str(parquet_pages_dir / "*.parquet")
+
+    with duckdb.connect() as connection:
+        combined_parquets = connection.read_parquet(parquet_input_pattern, union_by_name=True)
+        combined_parquets.write_parquet(COMBINED_PARQUET_PATH, compression="zstd")
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('sales_output_file', help="Path to the sales output file (Parquet)")
-    parser.add_argument('location_output_file', help="Path to the location output file (Parquet)")
-
-    args = parser.parse_args()
-
-    data = ingest_lottery_sales_data()
-    location_data, sales_data = sep_sales_and_location_data(data)
-
-    location_data = geocode_missing_lat_longs(location_data)
-    geo_located_data = convert_to_geodataframe(location_data)
-
-    sales_path = Path(args.sales_output_file)
-    location_path = Path(args.location_output_file)
-    sales_path.parent.mkdir(parents=True, exist_ok=True)
-    location_path.parent.mkdir(parents=True, exist_ok=True)
-
-    sales_data.to_parquet(sales_path, index=False, engine="pyarrow")
-    geo_located_data.to_parquet(location_path, index=False, engine="pyarrow")
     
-    print("Sales data and Location data written to parquet.")
+    #client = create_Socrata_client()
+    #output_directory = Path(INTERIM_PARQUET_PATH)
+    #total_records_downloaded = ingest_2025_sales_data(client=client, output_directory=output_directory, page_size=50000)
+    combine_parquet_pages()
+    print('parquet pages combined successfully')
