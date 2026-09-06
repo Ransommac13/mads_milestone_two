@@ -1,6 +1,11 @@
 """
 
 config.py
+
+This module does two things. 
+1. It defines constants for file paths used in the project.
+2. It loads environment variables from a .env file,
+specifically the Socrata app token required for API access.
 """
 
 import os
@@ -26,4 +31,3 @@ load_dotenv(ENV_PATH, override=True)
 SOCRATA_APP_TOKEN = os.getenv("SOCRATA_APP_TOKEN")
 if not SOCRATA_APP_TOKEN:
     raise RuntimeError("Socrata app token is missing. Please add it to your .env file.")
-
