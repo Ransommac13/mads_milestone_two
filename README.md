@@ -78,6 +78,13 @@ pip install -r requirements.txt
 - SOCRATA_APP_TOKEN=your_data_ny_gov_app_token
 - Each contributor should use their own local .env file. The actual .env file must not be committed to GitHub.
 
+## Collaboration Best Practices
+### Pushing Changes
+1. At the start of your session, pull in the updated repository.
+2. Make desired chagnes.
+3. Before pushing, pull again to catch any recent updates.
+4. Commit and push one module at a time. If possible, commit and push one function change at a time.
+
 ## Data Pipeline
 1. Query the data.ny.gov API for 2025 sales records.
 2. Download the records in deterministic, paginated batches.
