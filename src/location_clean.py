@@ -1,17 +1,25 @@
 """
 
-location_clean.py
-Input:
-    - Location data DataFrame (Parquet)
-Output:
-    - Cleaned location data DataFrame (Parquet)
+location_clean.py\
+
+This module contains functions that handle the cleaning and geolocation of location data from the separated location parquet file.
+1. It reads the location parquet file containing location data.
+2. It geocodes missing latitude and longitude values using the Census Geocoder API.
+3. It optionally drops rows with missing latitude or longitude values after attempting to geocode them.
+4. It converts the cleaned location data into a GeoDataFrame for spatial analysis.
+
+Input: Location data (Parquet)
+Output: Cleaned and geolocated location data (Parquet)
+
+Note: In the future, we may use address_corrections.py to resolve obvious address discrepancies
+rather than dropping records the Census Geocoder API cannot geocode.
 """
+
+from pathlib import Path
 
 import pandas as pd
 import geopandas as gpd
 import censusgeocode as cg
-
-from pathlib import Path
 
 from config import LOCATION_PARQUET_PATH, FINAL_LOCATION_PARQUET_PATH
 
@@ -44,21 +52,21 @@ def drop_missing_locations(location_df: pd.DataFrame):
 
     return location_df.dropna(subset=['latitude', 'longitude'])
 
-def convert_to_geodataframe(location_data):
+def convert_to_geodataframe(location_df):
     """Converts the location data DataFrame to a GeoDataFrame."""
 
     gdf = gpd.GeoDataFrame(
-        location_data,
-        geometry=gpd.points_from_xy(location_data.longitude, location_data.latitude),
+        location_df,
+        geometry=gpd.points_from_xy(location_df.longitude, location_df.latitude),
         crs="EPSG:4326"
     )
 
     return gdf
 
 if __name__ == "__main__":
-    
+
     location_data = pd.read_parquet(LOCATION_PARQUET_PATH)
-    
+
     location_data = geocode_missing_lat_longs(location_data)
     #location_data = drop_missing_locations(location_data)
     geo_located_data = convert_to_geodataframe(location_data)
