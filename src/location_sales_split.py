@@ -1,16 +1,24 @@
 """
 
-config.py
+location_sales_split.py
+
+This module contains functions that handle the separation of location and sales data from the combined parquet file.
+1. It reads the combined parquet file containing all 2025 lottery sales data.
+2. It separates the location data and sales data into two separate parquet files.
+3. It validates the separation by checking the number of sales records without corresponding location data.
+
+Input: Combined parquet file containing all 2025 lottery sales data.
+Output: Two separate parquet files: one for location data and one for sales data.
 """
 
 from pathlib import Path
 
 import duckdb
-import pandas as pd
 
-from config import COMBINED_PARQUET_PATH, LOCATION_PARQUET_PATH, SALES_PARQUET_PATH
+from src.config import COMBINED_PARQUET_PATH, LOCATION_PARQUET_PATH, SALES_PARQUET_PATH
 
 def separate_location_and_sales_data(source_parquet_path: Path, location_output_path: Path, sales_output_path: Path):
+    """This function separates the location data and sales data from the combined parquet file."""
 
     location_output_path.parent.mkdir(parents=True, exist_ok=True)
     sales_output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -60,6 +68,7 @@ def separate_location_and_sales_data(source_parquet_path: Path, location_output_
     return location_data, sales_output_path
 
 def validate_location_sales_split():
+    """This function validates the separation of location and sales data."""
 
     with duckdb.connect() as connection:
         validation = connection.execute(
