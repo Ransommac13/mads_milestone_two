@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import duckdb
 
-from src.config import SOCRATA_APP_TOKEN, INTERIM_PARQUET_PATH, COMBINED_PARQUET_PATH
+from config import SOCRATA_APP_TOKEN, INTERIM_PARQUET_PATH, COMBINED_PARQUET_PATH
 
 load_dotenv()
 

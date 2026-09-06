@@ -15,7 +15,7 @@ from pathlib import Path
 
 import duckdb
 
-from src.config import COMBINED_PARQUET_PATH, LOCATION_PARQUET_PATH, SALES_PARQUET_PATH
+from config import COMBINED_PARQUET_PATH, LOCATION_PARQUET_PATH, SALES_PARQUET_PATH
 
 def separate_location_and_sales_data(source_parquet_path: Path, location_output_path: Path, sales_output_path: Path):
     """This function separates the location data and sales data from the combined parquet file."""
