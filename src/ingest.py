@@ -1,20 +1,34 @@
 """
 
 ingest.py
+
+This module containts functions that handle the ingestion of 2025 lottery sales data using the Socrata API.
+1. It creates a Socrata client using the app token from the .env file.
+2. It ingests 2025 lottery sales data in pages, saving each page as a parquet file in the specified output directory.
+3. It validates the ingested parquet pages by checking the row count and date range.
+4. It combines all the parquet pages into a single parquet file for easier analysis and storage.
+
+Input: None
+Output: Combined parquet file containing all 2025 lottery sales data.
+
+Note: Due to the large file size of the combined parquet file,
+it is not stored in the GitHub repository. Instead, it is generated locally by running the ingest.py script.
+The combined parquet file is used as input in location_sales_split.py.
 """
+
+from pathlib import Path
 
 from sodapy import Socrata
 from dotenv import load_dotenv
 import pandas as pd
 import duckdb
 
-from pathlib import Path
-
-from config import SOCRATA_APP_TOKEN, INTERIM_PARQUET_PATH, COMBINED_PARQUET_PATH
+from src.config import SOCRATA_APP_TOKEN, INTERIM_PARQUET_PATH, COMBINED_PARQUET_PATH
 
 load_dotenv()
 
 def create_Socrata_client():
+    """This function creates a Socrata client using the app token from the .env file."""
 
     return Socrata(
         "data.ny.gov",
@@ -27,6 +41,8 @@ def ingest_2025_sales_data(
     output_directory: Path,
     page_size: int = 50000
 ):
+    """This function ingests 2025 lottery sales data in pages,
+    saving each page as a parquet file in the specified output directory."""
 
     output_directory.mkdir(parents=True, exist_ok=True)
 
@@ -72,6 +88,8 @@ def ingest_2025_sales_data(
     return total_downloaded
 
 def validate_parquet_pages():
+    """This function validates the ingested parquet pages
+    by checking the row count and date range."""
 
     validation_results = duckdb.sql("""
         SELECT
@@ -88,6 +106,7 @@ def validate_parquet_pages():
     return validation_results
 
 def combine_parquet_pages():
+    """This function combines all the parquet pages into a single parquet file for easier analysis and storage."""
 
     combined_parquet_path = Path(COMBINED_PARQUET_PATH)
     combined_parquet_path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,7 +119,7 @@ def combine_parquet_pages():
         combined_parquets.write_parquet(COMBINED_PARQUET_PATH, compression="zstd")
 
 if __name__ == "__main__":
-    
+
     #client = create_Socrata_client()
     #output_directory = Path(INTERIM_PARQUET_PATH)
     #total_records_downloaded = ingest_2025_sales_data(client=client, output_directory=output_directory, page_size=50000)
