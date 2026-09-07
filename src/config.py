@@ -25,6 +25,7 @@ FINAL_LOCATION_PARQUET_PATH = "data/final/location_data.parquet"
 FINAL_SALES_PARQUET_PATH = "data/final/sales_data.parquet"
 
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
+NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundry.parquet"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
