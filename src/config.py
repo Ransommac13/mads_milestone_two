@@ -27,6 +27,7 @@ FINAL_SALES_PARQUET_PATH = "data/final/sales_data.parquet"
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
 NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
 OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/*"
+INTERIM_OVERTURE_PARQUET_PATH = "data/interim/overture_data.parquet"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
