@@ -64,6 +64,8 @@ def extract_overture_places_data(duckdb_conn: duckdb.DuckDBPyConnection, output_
             SELECT
                 id,
                 geometry,
+                ST_X(geometry) AS longitude,
+                ST_Y(geometry) AS latitude,
                 basic_category,
                 taxonomy.primary AS taxonomy_primary,
                 taxonomy.hierarchy AS taxonomy_hierarchy,
@@ -121,7 +123,7 @@ if __name__ == "__main__":
     overture_connection = create_duckdb_connection()
 
     ny_state_boundaries_path = Path(NY_STATE_BOUNDARIES_PATH)
-    new_york_boundary = retrieve_ny_state_boundary(ny_state_boundaries_path)
+    new_york_boundary = retrieve_ny_state_boundary(ny_state_boundaries_path, write_to_parquet=False)
 
     interim_overture_parquet_path = Path(INTERIM_OVERTURE_PARQUET_PATH)
     overture_parquet_path = extract_overture_places_data(overture_connection, interim_overture_parquet_path)
