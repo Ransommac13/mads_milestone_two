@@ -3,6 +3,9 @@
 overture_places/ingest.py
 
 This module ingests overture places data.
+
+Note: Currently, this module ingests AUG '26 data, which is inappropriate for 2025 sales data.
+Next step is to merge with the GERS registry from Overture Maps and filter by 'first_seen' field.
 """
 
 from pathlib import Path
