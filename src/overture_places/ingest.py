@@ -15,6 +15,13 @@ import geopandas as gpd
 
 from src.config import CENSUS_STATE_BOUNDARIES_URL, NY_STATE_BOUNDARIES_PATH, OVERTURE_PLACES_AWS_PATH, INTERIM_OVERTURE_PARQUET_PATH
 
+def sample_func():
+    """Sample func for Git demonstration.
+    This is the docstring.
+    This is a change I have made."""
+
+    return None
+
 def create_duckdb_connection():
 
     connection = duckdb.connect()
