@@ -19,15 +19,17 @@ COMBINED_PARQUET_PATH = "data/interim/combined_lottery_sales_2025.parquet"
 LOCATION_PARQUET_PATH = "data/interim/location_data.parquet"
 SALES_PARQUET_PATH = "data/interim/sales_data.parquet"
 
-CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
-
 FINAL_LOCATION_PARQUET_PATH = "data/final/location_data.parquet"
 FINAL_SALES_PARQUET_PATH = "data/final/sales_data.parquet"
+
+NY_STATE_BLOCK_GROUP_PATH = "data/external/census_shapefile/tl_2025_36_bg.shp"
 
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
 NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
 OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/*"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/overture_data.parquet"
+
+CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
