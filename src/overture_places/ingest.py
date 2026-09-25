@@ -9,11 +9,16 @@ Next step is to merge with the GERS registry from Overture Maps and filter by 'f
 """
 
 from pathlib import Path
+import bisect
+import json
+from urllib.request import urlopen
 
 import duckdb
+import pandas as pd
 import geopandas as gpd
 
-from src.config import CENSUS_STATE_BOUNDARIES_URL, NY_STATE_BOUNDARIES_PATH, OVERTURE_PLACES_AWS_PATH, INTERIM_OVERTURE_PARQUET_PATH
+from src.config import CENSUS_STATE_BOUNDARIES_URL, NY_STATE_BOUNDARIES_PATH
+from src.config import OVERTURE_PLACES_AWS_PATH, OVERTURE_REGISTRY_AWS_PATH, INTERIM_OVERTURE_PARQUET_PATH, FILTERED_OVERTURE_PARQUET_PATH
 
 def create_duckdb_connection():
 
@@ -96,9 +101,92 @@ def extract_overture_places_data(duckdb_conn: duckdb.DuckDBPyConnection, output_
 
     return output_path
 
+def add_first_seen_date(duckdb_conn: duckdb.DuckDBPyConnection, places_input_path: Path, places_output_path: Path):
+
+    places_input_path_sql = places_input_path.as_posix().replace("'", "''")
+    overture_registry_path_sql = OVERTURE_REGISTRY_AWS_PATH.replace("'", "''")
+    filtered_overture_path_sql = places_output_path.as_posix().replace("'", "''")
+
+    # Identify the local ids within the Overture locations data.
+    duckdb_conn.execute(f"""
+        CREATE OR REPLACE TEMP TABLE target_ids AS
+        SELECT id
+        FROM read_parquet('{places_input_path_sql}')
+    """)
+
+    # Join Overture locations data with 'first_seen' field from the GERS registry for later filtering.
+    duckdb_conn.execute(f"""
+        COPY (
+            SELECT
+                t.id,
+                r.first_seen
+            FROM target_ids AS t
+            INNER JOIN read_parquet(
+                '{overture_registry_path_sql}'
+            ) AS r
+                ON t.id = r.id
+        )
+        TO '{filtered_overture_path_sql}'
+        (
+            FORMAT PARQUET,
+            COMPRESSION ZSTD
+        )
+    """)
+
+    print('Written to Parquet!')
+
+    return places_output_path
+
+def merge_places_first_seen(duckdb_conn: duckdb.DuckDBPyConnection, places_input_path: Path, first_seen_path: Path, filtered_places_path: Path):
+
+    places_input_path_sql = places_input_path.as_posix().replace("'", "''")
+    first_seen_path_sql = first_seen_path.as_posix().replace("'", "''")
+    filtered_places_path_sql = filtered_places_path.as_posix().replace("'", "''")
+
+    duckdb_conn.execute(f"""
+        COPY (
+            SELECT
+                p.*,
+                r.first_seen
+            FROM read_parquet('{places_input_path_sql}') AS p
+            INNER JOIN read_parquet('{first_seen_path_sql}') AS r
+                ON p.id = r.id
+        )
+        TO '{filtered_places_path_sql}'
+        (
+            FORMAT PARQUET,
+            COMPRESSION ZSTD
+        )
+    """)
+
+    return filtered_places_path
+
+def filter_places_by_date(duckdb_conn: duckdb.DuckDBPyConnection, filtered_places_path: Path, cutoff_date='2025-06-25'):
+
+    filtered_places_path_sql = filtered_places_path.as_posix().replace("'", "''")
+    
+    duckdb_conn.execute(f"""
+        COPY (
+            SELECT *
+            FROM read_parquet('{filtered_places_path_sql}')
+            WHERE CAST(substr(first_seen, 1, 10) AS DATE)
+                <= DATE '{cutoff_date}'
+        )
+        TO '{filtered_places_path_sql}'
+        (
+            FORMAT PARQUET,
+            COMPRESSION ZSTD
+        )
+    """)
+
+    print(f"Wrote overture places data to {filtered_places_path}, filtered to places that existed on or before {cutoff_date}")
+
+    return filtered_places_path, cutoff_date
+
+
 def validate_overture_ingest():
 
-    interim_overture_parquet_path_sql = Path(INTERIM_OVERTURE_PARQUET_PATH).as_posix()
+    overture_parquet_path_sql = Path(INTERIM_OVERTURE_PARQUET_PATH).as_posix()
 
     with duckdb.connect() as connection:
         validation = connection.sql(
@@ -112,7 +200,7 @@ def validate_overture_ingest():
                 COUNT(*) FILTER (
                     WHERE basic_category IS NULL
                 ) AS missing_category_count
-            FROM read_parquet('{interim_overture_parquet_path_sql}')
+            FROM read_parquet('{overture_parquet_path_sql}')
             """
         ).df()
 
@@ -121,12 +209,23 @@ def validate_overture_ingest():
 if __name__ == "__main__":
 
     overture_connection = create_duckdb_connection()
-
-    ny_state_boundaries_path = Path(NY_STATE_BOUNDARIES_PATH)
-    new_york_boundary = retrieve_ny_state_boundary(ny_state_boundaries_path, write_to_parquet=False)
-
     interim_overture_parquet_path = Path(INTERIM_OVERTURE_PARQUET_PATH)
-    overture_parquet_path = extract_overture_places_data(overture_connection, interim_overture_parquet_path)
+    first_seen_parquet_path = Path("data/interim/overture_first_seen.parquet")
+    filtered_overture_parquet_path = Path(FILTERED_OVERTURE_PARQUET_PATH)
 
-    validation_df = validate_overture_ingest()
-    print(validation_df.head())
+    ## Only uncomment to rerun ingest of New York state boundaries.
+    #ny_state_boundaries_path = Path(NY_STATE_BOUNDARIES_PATH)
+    #new_york_boundary = retrieve_ny_state_boundary(ny_state_boundaries_path, write_to_parquet=False)
+
+    ## Only uncomment to rerun ingest of overture place data.
+    #extract_overture_places_data(overture_connection, interim_overture_parquet_path)
+
+    ## DO NOT uncomment. Matching places to the registry first_seen date takes over an hour.
+    #add_first_seen_date(overture_connection, interim_overture_parquet_path, first_seen_parquet_path)
+
+    merge_places_first_seen(overture_connection, interim_overture_parquet_path, first_seen_parquet_path, filtered_overture_parquet_path)
+    filter_places_by_date(overture_connection, filtered_overture_parquet_path)
+    
+    #validation_df = validate_overture_ingest()
+    #print(validation_df.head())
+
