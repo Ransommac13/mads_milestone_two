@@ -27,9 +27,9 @@ NY_STATE_BLOCK_GROUP_PATH = "data/external/census_shapefile/tl_2025_36_bg.zip"
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
 NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
 OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/*"
-OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/"
-STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
+OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/*.parquet"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/overture_data.parquet"
+FILTERED_OVERTURE_PARQUET_PATH = "data/interim/overture_filtered.parquet"
 
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
