@@ -186,7 +186,7 @@ def filter_places_by_date(duckdb_conn: duckdb.DuckDBPyConnection, filtered_place
 
 def validate_overture_ingest():
 
-    overture_parquet_path_sql = Path(INTERIM_OVERTURE_PARQUET_PATH).as_posix()
+    overture_parquet_path_sql = Path(FILTERED_OVERTURE_PARQUET_PATH).as_posix()
 
     with duckdb.connect() as connection:
         validation = connection.sql(
@@ -199,7 +199,8 @@ def validate_overture_ingest():
                 ) AS missing_geometry_count,
                 COUNT(*) FILTER (
                     WHERE basic_category IS NULL
-                ) AS missing_category_count
+                ) AS missing_category_count,
+                COUNT(DISTINCT first_seen) AS unique_start_dates
             FROM read_parquet('{overture_parquet_path_sql}')
             """
         ).df()
@@ -226,6 +227,6 @@ if __name__ == "__main__":
     merge_places_first_seen(overture_connection, interim_overture_parquet_path, first_seen_parquet_path, filtered_overture_parquet_path)
     filter_places_by_date(overture_connection, filtered_overture_parquet_path)
     
-    #validation_df = validate_overture_ingest()
-    #print(validation_df.head())
+    validation_df = validate_overture_ingest()
+    print(validation_df.head())
 
