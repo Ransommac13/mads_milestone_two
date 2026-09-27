@@ -31,6 +31,14 @@ OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/*.parquet"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/overture_data.parquet"
 FILTERED_OVERTURE_PARQUET_PATH = "data/interim/overture_filtered.parquet"
 
+AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_1977.csv"
+AADT_PARQUET_PATH = "data/final/location_data_aadt.parquet"
+
+LODES_WAC_CSV_PATH = "data/external/lodes/ny_wac_S000_JT00_2023.csv.gz"
+LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
+LODES_WAC_PARQUET_PATH = "data/final/location_data_wac.parquet"
+LODES_RAC_PARQUET_PATH = "data/final/location_data_rac.parquet"
+
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
