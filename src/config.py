@@ -30,6 +30,7 @@ OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/the
 OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/*.parquet"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/overture_data.parquet"
 FILTERED_OVERTURE_PARQUET_PATH = "data/interim/overture_filtered.parquet"
+OVERTURE_PLACE_COUNTS_PARQUET_PATH = "data/final/location_data_overture.parquet"
 
 AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_1977.csv"
 AADT_PARQUET_PATH = "data/final/location_data_aadt.parquet"
