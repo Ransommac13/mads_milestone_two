@@ -24,7 +24,7 @@ AADT_YEAR = "AADT_2025"
 coordinate_gps = "EPSG:32118"
 
 #retailer farther then this from meter distance, then won't count as a match
-max_distance =1000
+max_distance =1600 #one mile
 
 def load_road_segemnts(gdb_path, layer):
     
