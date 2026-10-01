@@ -35,7 +35,9 @@ def separate_location_and_sales_data(source_parquet_path: Path, location_output_
             busaddr,
             buscity,
             buszip,
-            georeference
+            georeference,
+            chain,
+            bustype
         FROM all_lottery_data
         WHERE agtno IS NOT NULL
         QUALIFY ROW_NUMBER() OVER (
@@ -50,7 +52,9 @@ def separate_location_and_sales_data(source_parquet_path: Path, location_output_
                 busaddr,
                 buscity,
                 buszip,
-                georeference
+                georeference,
+                chain,
+                bustype
             )
             FROM all_lottery_data
             WHERE agtno IS NOT NULL
