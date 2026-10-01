@@ -35,6 +35,9 @@ OVERTURE_PLACE_COUNTS_PARQUET_PATH = "data/final/location_data_overture.parquet"
 AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_1977.csv"
 AADT_PARQUET_PATH = "data/final/location_data_aadt.parquet"
 
+AADT_GDB_PATH = "data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip"
+AADT_GDB_PARQUET_PATH = "data/final/data_aadt_2025.parquet"
+
 LODES_WAC_CSV_PATH = "data/external/lodes/ny_wac_S000_JT00_2023.csv.gz"
 LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
 LODES_WAC_PARQUET_PATH = "data/final/location_data_wac.parquet"
