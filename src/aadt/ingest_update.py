@@ -16,7 +16,7 @@ OUTPUT_PATH = PROJECT_ROOT / AADT_GDB_PARQUET_PATH
 
 
 # keep columns
-AADT_KEEP_COL = ["AADT", "RdName", "FC_Text", "Lanes", "Retired", "Rmp"]
+AADT_KEEP_COL = ["AADT", "RdName", "FC_Text", "Lanes", "Rmp"]
 AADT_YEAR = "AADT_2025"
 # NY State meters, max distance below this is real meters
 #Converts everything into a NY-specific system where units are meters
@@ -39,9 +39,6 @@ def load_road_segemnts(gdb_path, layer):
     roads = roads[available_columns + ["geometry"]].copy()
     # remove retired or (highway) rmp
 
-    if "Retired" in roads.columns:
-        roads = roads[roads["Retired"].fillna(0) == 0]
-
     if "Rmp" in roads.columns:
         roads = roads[roads["Rmp"].fillna(0) == 0]
 
@@ -53,7 +50,7 @@ def load_road_segemnts(gdb_path, layer):
         "Lanes": "aadt_lanes",
     }
     roads = roads.rename(columns = {k:v for k, v in rename_map.items() if k in roads.columns})
-    roads = roads.drop(columns = [c for c in ("Retired", "Rmp") if c in roads.columns])
+    roads = roads.drop(columns = [c for c in "Rmp" if c in roads.columns])
 
     #convert to meter base coordinate system
     return roads.to_crs(coordinate_gps)
