@@ -13,6 +13,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+RANDOM_SEED = 42
+
 INTERIM_PARQUET_PATH = "data/interim/lottery_sales_2025"
 COMBINED_PARQUET_PATH = "data/interim/combined_lottery_sales_2025.parquet"
 
@@ -47,6 +49,11 @@ LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
 EPA_RAWCSV_PATH = "data/raw/EPA_NY.csv"
 
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
+
+TRAINING_MASTER_PARQUET_PATH = "data/final/master_data.parquet"
+TRAIN_DATA_PARQUET_PATH = "data/modeling/train_data.parquet"
+VALIDATION_DATA_PARQUET_PATH = "data/modeling/val_data.parquet"
+TEST_DATA_PARQUET_PATH = "data/modeling/test_data.parquet"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"

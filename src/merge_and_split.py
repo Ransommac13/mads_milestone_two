@@ -1,0 +1,96 @@
+"""
+
+merge_and_split.py
+
+This module merges the lottery retailer sales data with all potential features from external sources
+and splits the data into train, validation, and test sets.
+"""
+
+from pathlib import Path
+
+import pandas as pd
+from sklearn.model_selection import GroupShuffleSplit
+
+from config import TRAINING_MASTER_PARQUET_PATH, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH, RANDOM_SEED
+
+def merge_all_external_features(location_path: Path, feature_dir: Path, id_col: str = "agtno"):
+    """
+    Merge retailer-level parquet files containing potential features from external datasets.
+    External datasets include EPA, LODES RAC, LODES WAC, Overture Places, and AADT.
+
+    Assumes:
+    - one row per retailer in each file
+    - all feature files contain 'agtno'
+    - address/location columns are duplicated across feature files
+    """
+
+    shared_cols = ['busnm', 'busaddr', 'buscity', 'buszip', 'chain', 'bustype', 'longitude', 'latitude', 'geometry', 'bg_geoid', 'tract_geoid']
+
+    location_base = pd.read_parquet(location_path)
+
+    # Confirm location_base has just one row per retailer.
+    if location_base[id_col].duplicated().any():
+        raise ValueError(f"Duplicate {id_col} values found in location_base.")
+
+    for feature_path in feature_dir.glob("*.parquet"):
+
+        # Don't merge the base file onto itself.
+        if feature_path.resolve() == location_path.resolve():
+            continue
+
+        features = pd.read_parquet(feature_path)
+
+        if id_col not in features.columns:
+            raise ValueError(f"{id_col} not found in {feature_path.name}")
+
+        if features[id_col].duplicated().any():
+            raise ValueError(f"Duplicate {id_col} values found in {feature_path.name}")
+
+        # Drop duplicated address columns.
+        cols_to_drop = [col for col in shared_cols if col in features.columns]
+        features = features.drop(columns=cols_to_drop)
+
+        # Guard against overwriting an existing feature.
+        overlapping = set(location_base.columns).intersection(set(features.columns)) - {id_col}
+        if overlapping:
+            raise ValueError(f"Overlapping columns found in {feature_path.name}: {overlapping}")
+
+        location_base = location_base.merge(features, on=id_col, how="left", validate="one_to_one")
+
+        print(f"Merged {feature_path.name} with location_base. New shape: {location_base.shape}")
+
+    return location_base
+
+def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
+    """Cleans the master data of any columns that are not features or help to identify the retailer."""
+
+    cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2']
+
+    return master_df.drop(columns=cols_to_drop)
+
+def drop_redundant_cols():
+    """This function is a placeholder for dropping redundant columns from the training data. It currently does nothing."""
+
+    return None
+
+def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tract_geoid", test_size=0.2, val_size=0.2, random_state=RANDOM_SEED):
+    """This function splits the master data into train, validation, and test sets based on a grouping column (e.g., tract_geoid).
+    It ensures that all rows with the same group value are in the same split to prevent data leakage."""
+
+    return None
+
+if __name__ == '__main__':
+
+    # Example usage:
+    location_path = Path("data/final/location_data.parquet")
+    feature_dir = Path("data/interim/external/merged_with_loc")
+    output_path = Path(TRAINING_MASTER_PARQUET_PATH)
+
+    master_data = merge_all_external_features(location_path, feature_dir)
+    master_data = clean_master_data(master_data)
+
+    master_data.to_parquet(output_path, index=False)
+    print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
+
+    print(master_data.columns)
+    print(master_data.head())
