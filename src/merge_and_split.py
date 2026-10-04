@@ -77,7 +77,24 @@ def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tr
     """This function splits the master data into train, validation, and test sets based on a grouping column (e.g., tract_geoid).
     It ensures that all rows with the same group value are in the same split to prevent data leakage."""
 
-    return None
+    splitter_one = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+    train_val_idx, test_idx = next(splitter_one.split(master_data, groups=master_data[group_col]))
+
+    train_val_data = master_data.iloc[train_val_idx].copy()
+    test = master_data.iloc[test_idx].copy()
+
+    relative_val_size = val_size / (1 - test_size)
+    splitter_two = GroupShuffleSplit(n_splits=1, test_size=relative_val_size, random_state=random_state)
+    train_idx, val_idx = next(splitter_two.split(train_val_data, groups=train_val_data[group_col]))
+
+    train = train_val_data.iloc[train_idx].copy()
+    val = train_val_data.iloc[val_idx].copy()
+
+    assert set(train["tract_geoid"]).isdisjoint(val["tract_geoid"])
+    assert set(train["tract_geoid"]).isdisjoint(test["tract_geoid"])
+    assert set(val["tract_geoid"]).isdisjoint(test["tract_geoid"])
+
+    return train, val, test
 
 if __name__ == '__main__':
 
@@ -89,8 +106,19 @@ if __name__ == '__main__':
     master_data = merge_all_external_features(location_path, feature_dir)
     master_data = clean_master_data(master_data)
 
-    master_data.to_parquet(output_path, index=False)
-    print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
+    temp_split_df = master_data.dropna(subset=["tract_geoid"]).copy()
+    print("This drops retailers with missing tract_geoid values. Purely temporary until we can resolve address issues.")
+    print(f"Number of rows dropped: {master_data.shape[0] - temp_split_df.shape[0]}")
 
-    print(master_data.columns)
-    print(master_data.head())
+    #master_data.to_parquet(output_path, index=False)
+    #print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
+
+    train, val, test = grouped_train_val_test_split(temp_split_df, group_col="tract_geoid", test_size=0.2, val_size=0.2)
+    #train.to_parquet(Path(TRAIN_DATA_PARQUET_PATH), index=False)
+    #val.to_parquet(Path(VALIDATION_DATA_PARQUET_PATH), index=False)
+    #test.to_parquet(Path(TEST_DATA_PARQUET_PATH), index=False)
+    #print("Train, validation, and test sets written to parquet.")
+    
+    print(f"Train shape: {train.shape}, Validation shape: {val.shape}, Test shape: {test.shape}")
+    print("Train data sample:")
+    print(train.head())
