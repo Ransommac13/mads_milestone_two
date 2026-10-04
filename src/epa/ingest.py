@@ -9,19 +9,24 @@ from multiprocessing import Value
 from pathlib import Path
 import pandas as pd
 
-from src.config import FINAL_LOCATION_PARQUET_PATH, PROJECT_ROOT, EPA_RAWCSV_PATH, EPA_PARQUET_PATH
+#from src.config import FINAL_LOCATION_PARQUET_PATH, PROJECT_ROOT, EPA_RAWCSV_PATH, EPA_PARQUET_PATH
 
-OUTPUT_PATH = PROJECT_ROOT / EPA_PARQUET_PATH
+#OUTPUT_PATH = PROJECT_ROOT / EPA_PARQUET_PATH
 
 def load_epa(epa_csv_path):  
     epa_df = pd.read_csv(epa_csv_path)
     return epa_df
 
 def process_epa(epa_df):
-    columns = ['OBJECTID','GEOID10','GEOID20','STATEFP','COUNTYFP','TRACTCE','BLKGRPCE','CBSA_POP','CBSA_EMP','HH','D3B', 'NatWalkInd']
-    subset_epa_df = epa_df[columns]
+    columns = ['OBJECTID','STATEFP','COUNTYFP','TRACTCE','BLKGRPCE','TotPop','HH','R_LowWageWk','R_MedWageWk',
+               'TotEmp','E_LowWageWk','E_MedWageWk','E_HiWageWk','D1A','D1B','D1C','D1C5_RET','D1C5_OFF',
+               'D1C5_IND','D1C5_SVC','D1C5_ENT','D1C8_RET','D1C8_OFF','D1C8_IND','D1C8_SVC','D1C8_ENT','D1C8_ED',
+               'D1C8_HLTH','D1C8_PUB','D3A','D3B','D3BAO','D3BMM3','D3BMM4','D3BPO3','D3BPO4','D4A','NatWalkInd']
+    
+    epa_process_df = epa_df[columns]
 
-    epa_process_df = subset_epa_df[subset_epa_df['STATEFP'] == 36]
+    #Raw data already subset to NY STATEFP == 36
+    #epa_process_df = subset_epa_df[subset_epa_df['STATEFP'] == 36]
 
     epa_process_df['STATEFP2'] = epa_process_df['STATEFP'].astype(str)
     epa_process_df['COUNTYFP2'] = epa_process_df['COUNTYFP'].astype(str).str.zfill(3)
@@ -37,15 +42,17 @@ def merge_epa(df1, df2):
 
 if __name__ == '__main__':
 
-    location_data = pd.read_parquet(FINAL_LOCATION_PARQUET_PATH)
-    #location_data = pd.read_parquet("mads_milestone_two/data/final/location_data.parquet")
+    #location_data = pd.read_parquet(FINAL_LOCATION_PARQUET_PATH)
+    location_data = pd.read_parquet("data/final/location_data.parquet")
 
-    #epa_df = load_epa("/Users/brisabol/Documents/MADS/SIADS 696/EPA_SmartLocationDatabase_V3_Jan_2021_Final (2).csv")
-    epa_df = load_epa(EPA_RAWCSV_PATH)
+    epa_df = load_epa("data/raw/EPA_NY.csv")
+    #epa_df = load_epa(EPA_RAWCSV_PATH)
     epa_process_df = process_epa(epa_df)
     epa_merge_df = merge_epa(location_data, epa_process_df)
 
-    #epa_merge_df.to_parquet('mads_milestone_two/data/interim/location_data_epa.parquet', index=False)
+    epa_merge_df.to_parquet('data/interim/location_data_epa.parquet', index=False)
 
     #OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
-    epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
+    #epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
+
+    #socrata app token is missing
