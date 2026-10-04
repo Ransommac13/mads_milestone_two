@@ -43,7 +43,8 @@ LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
 LODES_WAC_PARQUET_PATH = "data/final/location_data_wac.parquet"
 LODES_RAC_PARQUET_PATH = "data/final/location_data_rac.parquet"
 
-EPA_PARQUET_PATH = "data/interim/location_data_epa.parquet"
+EPA_RAWCSV_PATH = "data/interim/location_data_epa.parquet"
+EPA_PARQUET_PATH = "data/raw/EPA_NY.csv"
 
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
