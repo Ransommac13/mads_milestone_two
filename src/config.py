@@ -24,27 +24,27 @@ FINAL_SALES_PARQUET_PATH = "data/final/sales_data.parquet"
 
 NY_STATE_BLOCK_GROUP_PATH = "data/external/census_shapefile/tl_2025_36_bg.zip"
 
+OVERTURE_PLACE_COUNTS_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_overture.parquet"
+AADT_GDB_PARQUET_PATH = "data/interim/external/merged_with_loc/data_aadt_2025.parquet"
+LODES_WAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_wac.parquet"
+LODES_RAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_rac.parquet"
+EPA_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_epa.parquet"
+
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
 NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
 OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/*"
 OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/*.parquet"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/external/overture_data.parquet"
 FILTERED_OVERTURE_PARQUET_PATH = "data/interim/external/overture_filtered.parquet"
-OVERTURE_PLACE_COUNTS_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_overture.parquet"
 
 AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_1977.csv"
 AADT_PARQUET_PATH = "data/interim/external/location_data_aadt.parquet"
-
 AADT_GDB_PATH = "data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip"
-AADT_GDB_PARQUET_PATH = "data/interim/external/merged_with_loc/data_aadt_2025.parquet"
 
 LODES_WAC_CSV_PATH = "data/external/lodes/ny_wac_S000_JT00_2023.csv.gz"
 LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
-LODES_WAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_wac.parquet"
-LODES_RAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_rac.parquet"
 
 EPA_RAWCSV_PATH = "data/raw/EPA_NY.csv"
-EPA_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_epa.parquet"
 
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
