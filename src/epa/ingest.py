@@ -18,10 +18,9 @@ def load_epa(epa_csv_path):
     return epa_df
 
 def process_epa(epa_df):
-    columns = ['OBJECTID','STATEFP','COUNTYFP','TRACTCE','BLKGRPCE','TotPop','HH','R_LowWageWk','R_MedWageWk',
-               'TotEmp','E_LowWageWk','E_MedWageWk','E_HiWageWk','D1A','D1B','D1C','D1C5_RET','D1C5_OFF',
-               'D1C5_IND','D1C5_SVC','D1C5_ENT','D1C8_RET','D1C8_OFF','D1C8_IND','D1C8_SVC','D1C8_ENT','D1C8_ED',
-               'D1C8_HLTH','D1C8_PUB','D3A','D3B','D3BAO','D3BMM3','D3BMM4','D3BPO3','D3BPO4','D4A','NatWalkInd']
+    columns = ['OBJECTID','STATEFP','COUNTYFP','TRACTCE','BLKGRPCE','D1A','D1B','D1C',
+               'D1C8_RET','D1C8_OFF','D1C8_IND','D1C8_SVC','D1C8_ENT','D1C8_ED','D1C8_HLTH','D1C8_PUB',
+               'D3A','NatWalkInd']
     
     epa_process_df = epa_df[columns]
 
@@ -50,7 +49,7 @@ if __name__ == '__main__':
     epa_process_df = process_epa(epa_df)
     epa_merge_df = merge_epa(location_data, epa_process_df)
 
-    epa_merge_df.to_parquet('data/interim/location_data_epa.parquet', index=False)
+    epa_merge_df.to_parquet('data/interim/external/merged_with_loc/location_data_epa.parquet', index=False)
 
     #OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
     #epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
