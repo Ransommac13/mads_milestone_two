@@ -105,18 +105,18 @@ if __name__ == '__main__':
     master_data = merge_all_external_features(location_path, feature_dir)
     master_data = clean_master_data(master_data)
 
-    #master_data.to_parquet(output_path, index=False)
-    #print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
+    master_data.to_parquet(output_path, index=False)
+    print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
 
     temp_split_df = master_data.dropna(subset=["tract_geoid"]).copy()
     print("This drops retailers with missing tract_geoid values. Purely temporary until we can resolve address issues.")
     print(f"Number of rows dropped: {master_data.shape[0] - temp_split_df.shape[0]}")
 
     train, val, test = grouped_train_val_test_split(temp_split_df, group_col="tract_geoid", test_size=0.2, val_size=0.2)
-    #train.to_parquet(Path(TRAIN_DATA_PARQUET_PATH), index=False)
-    #val.to_parquet(Path(VALIDATION_DATA_PARQUET_PATH), index=False)
-    #test.to_parquet(Path(TEST_DATA_PARQUET_PATH), index=False)
-    #print("Train, validation, and test sets written to parquet.")
+    train.to_parquet(Path(TRAIN_DATA_PARQUET_PATH), index=False)
+    val.to_parquet(Path(VALIDATION_DATA_PARQUET_PATH), index=False)
+    test.to_parquet(Path(TEST_DATA_PARQUET_PATH), index=False)
+    print("Train, validation, and test sets written to parquet.")
     
     print(f"Train shape: {train.shape}, Validation shape: {val.shape}, Test shape: {test.shape}")
     print("Train data sample:")

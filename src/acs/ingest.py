@@ -283,13 +283,13 @@ def feature_eng_acs_data(all_acs_features: pd.DataFrame) -> pd.DataFrame:
     all_acs_features['poverty_rate'] = all_acs_features['below_poverty'] / all_acs_features['poverty_universe']
 
     # Calculate the proportion of each education gruop relative to the total population.
-    for ed_group in ['education_25plus_total', 'bachelors_degree', 'post_grad_degree']:
-        proportion_col = f"{ed_group}_proportion"
-        all_acs_features[proportion_col] = all_acs_features[ed_group] / all_acs_features['total_population']
+    for ed_group in ['bachelors_degree', 'post_grad_degree']:
+        proportion_col = f"{ed_group}_proportion_25plus"
+        all_acs_features[proportion_col] = all_acs_features[ed_group] / all_acs_features['education_25plus_total']
 
     # Calculate labor force participation and unemployment rates.
     for emp_stat in ['in_labor_force', 'unemployed']:
-        proportion_col = f"{emp_stat}_proportion"
+        proportion_col = f"{emp_stat}_proportion_16plus"
         all_acs_features[proportion_col] = all_acs_features[emp_stat] / all_acs_features['population_16plus']
 
     # Calculate proporations of owner- and renter-occupied housing units.
