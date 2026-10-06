@@ -98,7 +98,6 @@ def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tr
 
 if __name__ == '__main__':
 
-    # Example usage:
     location_path = Path("data/final/location_data.parquet")
     feature_dir = Path("data/interim/external/merged_with_loc")
     output_path = Path(TRAINING_MASTER_PARQUET_PATH)

@@ -31,6 +31,7 @@ AADT_GDB_PARQUET_PATH = "data/interim/external/merged_with_loc/data_aadt_2025.pa
 LODES_WAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_wac.parquet"
 LODES_RAC_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_rac.parquet"
 EPA_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_epa.parquet"
+ACS_PARQUET_PATH = "data/interim/external/merged_with_loc/location_data_acs.parquet"
 
 CENSUS_STATE_BOUNDARIES_URL = "https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip"
 NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
@@ -48,6 +49,9 @@ LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
 
 EPA_RAWCSV_PATH = "data/raw/EPA_NY.csv"
 
+ACS_BASE_URL = "https://api.census.gov/data/2024/acs/acs5"
+ACS_INTERIM_PARQUET_PATH = "data/interim/external/acs_data_all"
+
 CORRECTIONS_PATH = "data/corrections/address_corrections.csv"
 
 TRAINING_MASTER_PARQUET_PATH = "data/final/master_data.parquet"
@@ -62,3 +66,7 @@ load_dotenv(ENV_PATH, override=True)
 SOCRATA_APP_TOKEN = os.getenv("SOCRATA_APP_TOKEN")
 if not SOCRATA_APP_TOKEN:
     raise RuntimeError("Socrata app token is missing. Please add it to your .env file.")
+
+ACS_API_KEY = os.getenv("ACS_API_KEY")
+if not ACS_API_KEY:
+    raise RuntimeError("ACS API key is missing. Please add it to your .env file.")
