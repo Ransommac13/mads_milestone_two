@@ -59,6 +59,8 @@ TRAIN_DATA_PARQUET_PATH = "data/modeling/train_data.parquet"
 VALIDATION_DATA_PARQUET_PATH = "data/modeling/val_data.parquet"
 TEST_DATA_PARQUET_PATH = "data/modeling/test_data.parquet"
 
+FLAG_CORRELATION_CSV_PATH = "src/correlation_test/high_correlation_test.csv"
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
 load_dotenv(ENV_PATH, override=True)
