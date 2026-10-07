@@ -153,6 +153,8 @@ ACS_EMPLOYMENT_VARIABLES = {
     "B23025_001M": "population_16plus_moe",
     "B23025_002E": "in_labor_force",
     "B23025_002M": "in_labor_force_moe",
+    "B23025_003E": "civilian_labor_force",
+    "B23025_003M": "civilian_labor_force_moe",
     "B23025_005E": "unemployed",
     "B23025_005M": "unemployed_moe"
 }
@@ -176,6 +178,16 @@ ACS_HOUSEHOLD_VARIABLES = {
     "B11001_008E": "living_alone_households",
     "B11001_008M": "living_alone_households_moe"
 }
+
+ACS_VEHICLE_VARIABLES = {
+    "B25044_001E": "occupied_households_vehicle_total",
+    "B25044_001M": "occupied_households_vehicle_total_moe",
+    "B25044_003E": "owner_no_vehicle",
+    "B25044_003M": "owner_no_vehicle_moe",
+    "B25044_010E": "renter_no_vehicle",
+    "B25044_010M": "renter_no_vehicle_moe",
+}
+
 
 def ingest_acs_data(variable_map: dict, api_key: str | None = None, include_name: bool = False) -> pd.DataFrame:
 
@@ -229,7 +241,8 @@ def aggregate_counts(all_features_df: pd.DataFrame) -> pd.DataFrame:
         "age_18_29": ["male_18_19", "male_20", "male_21", "male_22_24", "male_25_29", "female_18_19", "female_20", "female_21", "female_22_24", "female_25_29"],
         "age_30_64": ["male_30_34", "male_35_39", "male_40_44", "male_45_49", "male_50_54", "male_55_59", "male_60_61", "male_62_64", "female_30_34", "female_35_39", "female_40_44", "female_45_49", "female_50_54", "female_55_59", "female_60_61", "female_62_64"],
         "age_65_plus": ["male_65_66", "male_67_69", "male_70_74", "male_75_79", "male_80_84", "male_85_plus", "female_65_66", "female_67_69", "female_70_74", "female_75_79", "female_80_84", "female_85_plus"],
-        "post_grad_degree": ["masters_degree", "professional_degree", "doctorate_degree"]
+        "post_grad_degree": ["masters_degree", "professional_degree", "doctorate_degree"],
+        "no_vehicle_households": ["owner_no_vehicle", "renter_no_vehicle"]
     }
 
     # Perform the aggregation
@@ -247,7 +260,8 @@ def aggregate_moes(all_features_df: pd.DataFrame) -> pd.DataFrame:
         "age_18_29_moe": ["male_18_19_moe", "male_20_moe", "male_21_moe", "male_22_24_moe", "male_25_29_moe", "female_18_19_moe", "female_20_moe", "female_21_moe", "female_22_24_moe", "female_25_29_moe"],
         "age_30_64_moe": ["male_30_34_moe", "male_35_39_moe", "male_40_44_moe", "male_45_49_moe", "male_50_54_moe", "male_55_59_moe", "male_60_61_moe", "male_62_64_moe", "female_30_34_moe", "female_35_39_moe", "female_40_44_moe", "female_45_49_moe", "female_50_54_moe", "female_55_59_moe", "female_60_61_moe", "female_62_64_moe"],
         "age_65_plus_moe": ["male_65_66_moe", "male_67_69_moe", "male_70_74_moe", "male_75_79_moe", "male_80_84_moe", "male_85_plus_moe", "female_65_66_moe", "female_67_69_moe", "female_70_74_moe", "female_75_79_moe", "female_80_84_moe", "female_85_plus_moe"],
-        "post_grad_degree_moe": ["masters_degree_moe", "professional_degree_moe", "doctorate_degree_moe"]
+        "post_grad_degree_moe": ["masters_degree_moe", "professional_degree_moe", "doctorate_degree_moe"],
+        "no_vehicle_households_moe": ["owner_no_vehicle_moe", "renter_no_vehicle_moe"]
     }
 
     # Perform the aggregation using the square root of the sum of squares method
@@ -288,10 +302,9 @@ def feature_eng_acs_data(all_acs_features: pd.DataFrame) -> pd.DataFrame:
         all_acs_features[proportion_col] = all_acs_features[ed_group] / all_acs_features['education_25plus_total']
 
     # Calculate labor force participation and unemployment rates.
-    for emp_stat in ['in_labor_force', 'unemployed']:
-        proportion_col = f"{emp_stat}_proportion_16plus"
-        all_acs_features[proportion_col] = all_acs_features[emp_stat] / all_acs_features['population_16plus']
-
+    all_acs_features['labor_force_participation_rate'] = all_acs_features['in_labor_force'] / all_acs_features['population_16plus']
+    all_acs_features['unemployment_rate'] = all_acs_features['unemployed'] / all_acs_features['civilian_labor_force']
+    
     # Calculate proporations of owner- and renter-occupied housing units.
     for housing_status in ['owner_occupied', 'renter_occupied']:
         proportion_col = f"{housing_status}_proportion"
@@ -301,6 +314,9 @@ def feature_eng_acs_data(all_acs_features: pd.DataFrame) -> pd.DataFrame:
     all_acs_features['family_households_proportion'] = all_acs_features['family_households'] / all_acs_features['households_total']
     all_acs_features['nonfamily_multiperson_households_proportion'] = (all_acs_features['nonfamily_households'] / all_acs_features['households_total']) - (all_acs_features['living_alone_households'] / all_acs_features['households_total'])
     all_acs_features['living_alone_households_proportion'] = all_acs_features['living_alone_households'] / all_acs_features['households_total']
+
+    # Calcualte the proportion of households with no vehicle.
+    all_acs_features['no_vehicle_households_proportion'] = all_acs_features['no_vehicle_households'] / all_acs_features['occupied_households_vehicle_total']
     
     return all_acs_features
 
@@ -309,9 +325,10 @@ def trim_to_desired_features(all_acs_features: pd.DataFrame) -> pd.DataFrame:
     moe_cols = [col for col in all_acs_features.columns if col.endswith("_moe")]
     cols_used_for_eng = ['age_18_29', 'age_30_64', 'age_65_plus', 'poverty_universe', 'below_poverty',
                          'education_25plus_total', 'bachelors_degree', 'post_grad_degree',
-                         'in_labor_force', 'unemployed', 'population_16plus',
+                         'in_labor_force', 'unemployed', 'population_16plus', 'civilian_labor_force',
                          'owner_occupied', 'renter_occupied', 'occupied_housing_units',
-                         'family_households', 'nonfamily_households', 'living_alone_households']
+                         'family_households', 'nonfamily_households', 'living_alone_households',
+                         'no_vehicle_households', 'occupied_households_vehicle_total']
     
     cols_to_drop = moe_cols + cols_used_for_eng
 
@@ -330,12 +347,14 @@ if __name__ == "__main__":
     acs_employment = ingest_acs_data(variable_map=ACS_EMPLOYMENT_VARIABLES, api_key=None)
     acs_housing = ingest_acs_data(variable_map=ACS_HOUSING_VARIABLES, api_key=None)
     acs_household = ingest_acs_data(variable_map=ACS_HOUSEHOLD_VARIABLES, api_key=None)
+    acs_vehicle = ingest_acs_data(variable_map=ACS_VEHICLE_VARIABLES, api_key=None)
 
     age_features_df = pd.merge(acs_age_counts, acs_age_moes, on='bg_geoid', how='left')
     other_acs_features_df = acs_socioeconomic.merge(acs_education, on='bg_geoid', how='left') \
         .merge(acs_employment, on='bg_geoid', how='left') \
         .merge(acs_housing, on='bg_geoid', how='left') \
-        .merge(acs_household, on='bg_geoid', how='left')
+        .merge(acs_household, on='bg_geoid', how='left') \
+        .merge(acs_vehicle, on='bg_geoid', how='left')
     
     raw_features_df = age_features_df.merge(other_acs_features_df, on='bg_geoid', how='left')
     aggregated_features_df = aggregate_counts(raw_features_df)
@@ -351,9 +370,9 @@ if __name__ == "__main__":
     acs_interim_parquet_path.parent.mkdir(parents=True, exist_ok=True)
     acs_all_features_df.to_parquet(str(acs_interim_parquet_path), index=False, engine="pyarrow")
     
-    
     acs_parquet_path = Path(ACS_PARQUET_PATH)
     acs_parquet_path.parent.mkdir(parents=True, exist_ok=True)
     location_data_acs_df.to_parquet(str(acs_parquet_path), index=False, engine="pyarrow")
 
     print("ACS features written to parquet!")
+    print(location_data_acs_df.sample(5))
