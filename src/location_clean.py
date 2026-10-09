@@ -18,10 +18,14 @@ rather than dropping records the Census Geocoder API cannot geocode.
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import geopandas as gpd
 import censusgeocode as cg
+from sklearn.neighbors import BallTree
 
 from config import LOCATION_PARQUET_PATH, FINAL_LOCATION_PARQUET_PATH, NY_STATE_BLOCK_GROUP_PATH
+
+EARTH_RADIUS_MILES = 3958.8
 
 def geocode_missing_lat_longs(location_df: pd.DataFrame):
     """Geocodes missing latitude and longitude values in the location DataFrame using the Census Geocoder API."""
@@ -91,16 +95,48 @@ def attach_census_bg(location_gdf, ny_bg_shapefile_path=NY_STATE_BLOCK_GROUP_PAT
 
     return location_gdf
 
+def convert_chain_indicator(location_gdf, chain_col='chain'):
+
+    df = location_gdf.copy()
+    df[chain_col] = df[chain_col].astype(int)
+
+    df[chain_col] = np.where(df[chain_col] > 0, 'chain', 'independent')
+
+    return df
+
+def calc_competitor_counts(location_gdf, radius_miles=1, lat_col='latitude', long_col='longitude'):
+
+    retailers_df = location_gdf.copy()
+
+    coords = np.radians(retailers_df[[lat_col, long_col]].to_numpy())
+
+    tree = BallTree(coords, metric="haversine")
+
+    radius_radians = (radius_miles / EARTH_RADIUS_MILES)
+
+    counts = tree.query_radius(coords, r=radius_radians, count_only=True)
+
+    # Each retailer counts itself at distance 0
+    retailers_df[f"competitors_within_{radius_miles}_mi"] = counts - 1
+
+    return retailers_df
+
 if __name__ == "__main__":
 
     location_data = pd.read_parquet(LOCATION_PARQUET_PATH)
 
     location_data = geocode_missing_lat_longs(location_data)
-    #location_data = drop_missing_locations(location_data)
+    location_data = drop_missing_locations(location_data)
     geo_located_data = convert_to_geodataframe(location_data)
 
     final_location_data = attach_census_bg(geo_located_data, NY_STATE_BLOCK_GROUP_PATH)
-    print(final_location_data.sample(5))
+    
+    final_location_data = convert_chain_indicator(final_location_data)
+    final_location_data = calc_competitor_counts(final_location_data, radius_miles=1)
+
+    print(final_location_data.columns)
+    print(final_location_data.isna().sum())
+    print(final_location_data.head())
 
     final_location_path = Path(FINAL_LOCATION_PARQUET_PATH)
     final_location_path.parent.mkdir(parents=True, exist_ok=True)

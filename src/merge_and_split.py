@@ -24,7 +24,7 @@ def merge_all_external_features(location_path: Path, feature_dir: Path, id_col: 
     - address/location columns are duplicated across feature files
     """
 
-    shared_cols = ['busnm', 'busaddr', 'buscity', 'buszip', 'chain', 'bustype', 'longitude', 'latitude', 'geometry', 'bg_geoid', 'tract_geoid']
+    shared_cols = ['busnm', 'busaddr', 'buscity', 'buszip', 'chain', 'bustype', 'longitude', 'latitude', 'geometry', 'bg_geoid', 'tract_geoid', 'competitors_within_1_mi']
 
     location_base = pd.read_parquet(location_path)
 
