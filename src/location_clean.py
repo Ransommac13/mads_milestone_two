@@ -37,13 +37,14 @@ def geocode_missing_lat_longs(location_df: pd.DataFrame):
         street = str(row['busaddr']).strip()
         city = str(row['buscity']).strip()
         zip_code = str(row['buszip']).strip()
+        name = str(row['busnm']).strip()
         try:
             result = cg.address(street, city=city, state='NY', zip_code=zip_code, returntype='locations')
             if result:
                 location_df.at[index, 'latitude'] = result[0]['coordinates']['y']
                 location_df.at[index, 'longitude'] = result[0]['coordinates']['x']
-            #else:
-            #    print(f"No geocoding result for agent number {agtno} at address {repr(street)}, {repr(city)}, {repr(zip_code)}")
+            else:
+                print(f"No geocoding result for agent number {agtno} {name} at address {repr(street)}, {repr(city)}, {repr(zip_code)}")
         except Exception as e:
             print(f"Error geocoding address for agent number {agtno}: {e}")
 
@@ -52,12 +53,28 @@ def geocode_missing_lat_longs(location_df: pd.DataFrame):
 
     return location_df
 
-def drop_missing_locations(location_df: pd.DataFrame):
-    """Drops rows with missing latitude or longitude values from the location DataFrame.
-    Only use after attempting to geocode missing locations.
-    Eventually use address_corrections.py to resolve obvious discrepancies."""
+def drop_locations(locations_df: pd.DataFrame):
+    """Drops retailers that upon further inspection either can't be reliably attributed to a Google Maps location or are a duplicate retailer."""
 
-    return location_df.dropna(subset=['latitude', 'longitude'])
+    locations = locations_df.copy()
+    
+    agtnos_to_drop = {
+        '32233' : 'nonexistent', 
+        '45277' : 'low confidence',
+        '46005' : 'low confidence',
+        '75730' : 'low confidence',
+        '114708' : 'nonexistent',
+        '113146' : 'duplicate retailer',
+        '115042' : 'duplicate retailer',
+        '115552' : 'duplicate retailer'
+        }
+
+    locations["agtno"] = (locations["agtno"].astype("string").str.strip())
+    drop_ids = {str(x).strip() for x in agtnos_to_drop.keys()}
+
+    locations = locations[~locations["agtno"].isin(drop_ids)]
+
+    return locations
 
 def convert_to_geodataframe(location_df):
     """Converts the location data DataFrame to a GeoDataFrame."""
@@ -125,8 +142,8 @@ if __name__ == "__main__":
 
     location_data = pd.read_parquet(LOCATION_PARQUET_PATH)
 
+    location_data = drop_locations(location_data)
     location_data = geocode_missing_lat_longs(location_data)
-    location_data = drop_missing_locations(location_data)
     geo_located_data = convert_to_geodataframe(location_data)
 
     final_location_data = attach_census_bg(geo_located_data, NY_STATE_BLOCK_GROUP_PATH)
@@ -134,11 +151,11 @@ if __name__ == "__main__":
     final_location_data = convert_chain_indicator(final_location_data)
     final_location_data = calc_competitor_counts(final_location_data, radius_miles=1)
 
-    print(final_location_data.columns)
-    print(final_location_data.isna().sum())
-    print(final_location_data.head())
+    final_location_data = final_location_data.drop(columns=['correction_reason', 'address_corrected', 'coordinates_corrected', 'geocode_source'])
 
     final_location_path = Path(FINAL_LOCATION_PARQUET_PATH)
     final_location_path.parent.mkdir(parents=True, exist_ok=True)
 
     final_location_data.to_parquet(str(final_location_path), index=False, engine="pyarrow")
+
+    print("Final location data written to parquet!")

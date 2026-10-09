@@ -1,2 +1,54 @@
-agtno,original_busaddr,original_buscity,original_buszip,corrected_busaddr,corrected_buscity,corrected_buszip,correction_reason,source,added_at
-114091,9012 JERICHO TURNPIKE,MINEOLA,11501,90-12 JERICHO TURNPIKE,MINEOLA,11501,typo,Google,2026-08-27T19:47:08.649115+00:00
+agtno,original_busaddr,original_buscity,original_buszip,corrected_busaddr,corrected_buscity,corrected_buszip,correction_reason,longitude,latitude,geocode_source
+49976,,,,,,,no_geocode_result,-75.9110624,43.97487378,Google Maps
+114978,,,,,,,no_geocode_result,-73.76148262,42.64967508,Google Maps
+100551,,,,,,,no_geocode_result,-73.76148262,42.64967508,Google Maps
+73594,25-05 CARMEL AVENUE,BREWSTER,10509,2505 CARMEL AVE,BREWSTER,10509,typo,,,US Census geocoder
+109625,3048 SUTHERLAND RD,EAST MEREDITH,13757,304 B SUTHERLAND RD,EAST MEREDITH,13757,typo,,,US Census geocoder
+114788,,,,,,,no_geocode_result,-73.73149669,40.99363364,Google Maps
+17454,,,,,,,no_geocode_result,-73.78162141,40.64438285,Google Maps
+36001,155 BWAY,WHITEHALL,12887,155 BROADWAY,WHITEHALL,12887,typo,,,US Census geocoder
+113979,,,,,,,no_geocode_result,-73.76148262,42.64967508,Google Maps
+105549,6215 #4 ROAD,LOWVILLE,13367,6215 NUMBER FOUR ROAD,LOWVILLE,13367,typo,,,US Census geocoder
+69088,,,,,,,no_geocode_result,-72.01318096,41.27008965,Google Maps
+115645,,,,,,,no_geocode_result,-73.75980713,42.64927156,Google Maps
+21053,,,,,,,no_geocode_result,-73.46126204,40.71763099,Google Maps
+37964,,,,,,,no_geocode_result,-74.60230817,41.75755403,Google Maps
+38158,,,,,,,no_geocode_result,-73.56773037,42.7490061,Google Maps
+38229,,,,,,,no_geocode_result,-74.36247314,41.54221208,Google Maps
+38396,,,,,,,no_geocode_result,-74.00005409,42.01364642,Google Maps
+41747,9679 MAIN ST,BREWERTON,13029,9679 BREWERTON RD,BREWERTON,13029,typo,,,US Census geocoder
+47716,9005 STATE ROUTE 56,RAYMONDVILLE,13678,9005 STATE RTE 56,MASSENA,13662,typo,,,US Census geocoder
+49558,32720 RT 3,GREAT BEND,13643,32720 STATE RTE 3,CARTHAGE,13619,typo,,,US Census geocoder
+63601,315-25 MAIN RD,CUTCHOGUE,11935,31525 MAIN RD,CUTCHOGUE,11935,typo,,,US Census geocoder
+64378,57-01 SUNRISE HWY,HOLBROOK,11741,5701 SUNRISE HWY,HOLBROOK,11741,typo,,,US Census geocoder
+67525,,,,,,,no_geocode_result,-73.18548738,40.83501582,Google Maps
+67831,575 NESCONSET HWY,HAUPPAUGE,11788,575 SMITHTOWN BYP BYP,HAUPPAUGE,11788,typo,,,US Census geocoder
+68269,1220 FULTON AVE,UNIONDALE,11553,711 FULTON AVE,HEMPSTEAD,11550,typo,,,US Census geocoder
+70334,,,,,,,no_geocode_result,-75.02722236,41.75825537,Google Maps
+73270,,,,,,,no_geocode_result,-76.91878219,42.95878643,Google Maps
+76480,,,,,,,no_geocode_result,-73.6578204,42.43331956,Google Maps
+77321,214 MAYFAIR SHOPPING CENTER,COMMACK,11725,2020 JERICHO TPKE,COMMACK,11725,typo,,,US Census geocoder
+79456,,,,,,,no_geocode_result,-73.79279517,40.66301632,Google Maps
+87857,111-20 FLATLANDS AVE,BROOKLYN,11207,11120 FLATLANDS AVE,BROOKLYN,11207,typo,,,US Census geocoder
+103364,,,,,,,no_geocode_result,-74.37182472,41.62881239,Google Maps
+104677,11566 EAST MAIN ST,EAST AURORA,14052,11566 BIG TREE RD,EAST AURORA,14052,typo,,,US Census geocoder
+104720,,,,,,,no_geocode_result,-75.61794303,43.29673238,Google Maps
+105693,,,,,,,no_geocode_result,-78.6033187,42.95231345,Google Maps
+105694,,,,,,,no_geocode_result,-78.32834937,43.01197186,Google Maps
+105834,,,,,,,no_geocode_result,-75.91779117,43.99919114,Google Maps
+106582,108-04 FLATLANDS AVE,BROOKLYN,11236,10804 FLATLANDS AVE,BROOKLYN,11236,typo,,,US Census geocoder
+107648,,,,,,,no_geocode_result,-72.5783649,40.93793846,Google Maps
+109255,,,,,,,no_geocode_result,-72.61693888,40.93523816,Google Maps
+110055,,,,,,,no_geocode_result,-73.9934687,40.75054985,Google Maps
+110847,,,,,,,no_geocode_result,-73.80580643,42.42791655,Google Maps
+110848,,,,,,,no_geocode_result,-74.80366728,43.01597129,Google Maps
+110849,,,,,,,no_geocode_result,-74.8034774,43.0170632,Google Maps
+110850,,,,,,,no_geocode_result,-74.09687939,42.89686682,Google Maps
+111528,,,,,,,no_geocode_result,-77.43627981,43.01587236,Google Maps
+112118,,,,,,,no_geocode_result,-75.25068884,42.87942961,Google Maps
+112122,,,,,,,no_geocode_result,-73.96027319,41.19386161,Google Maps
+113244,,,,,,,no_geocode_result,-73.76148262,42.64967508,Google Maps
+113538,,,,,,,no_geocode_result,-74.334961,42.70564388,Google Maps
+114091,9012 JERICHO TURNPIKE,MINEOLA,11501,12 JERICHO TPKE,MINEOLA,11501,typo,,,US Census geocoder
+115141,2180 NY-5,SENECA FALLS,13148,2180 US HWY 20,SENECA FALLS,13148,typo,,,US Census geocoder
+75055,,,,,,,no_geocode_result,-73.76148262,42.64967508,Google Maps
