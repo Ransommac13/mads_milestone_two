@@ -64,16 +64,16 @@ def merge_all_external_features(location_path: Path, feature_dir: Path, id_col: 
 def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the master data of any columns that are not features or help to identify the retailer."""
 
-    cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2']
+    location_cols_to_drop = ['busnm', 'busaddr', 'buscity', 'buszip', 'geometry']
+    vestigial_cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2']
+    irrelevant_cols_to_drop = ['aadt_road_name', 'nonfamily_multiperson_households_proportion']
+    redundant_cols_to_drop = ['wac_ce03', 'rac_ce03', 'D1A', 'D1C8_RET', 'D1C8_OFF', 'D1C8_IND',
+                              'D1C8_SVC', 'D1C8_ENT', 'D1C8_ED', 'D1C8_HLTH', 'D1C8_PUB',
+                              'households_total', 'age_65_plus_proportion', 'renter_occupied_proportion', 'living_alone_households_proportion']
+
+    cols_to_drop = [*location_cols_to_drop, *vestigial_cols_to_drop, *irrelevant_cols_to_drop, *redundant_cols_to_drop]
 
     return master_df.drop(columns=cols_to_drop)
-
-def drop_redundant_cols():
-    """This function is a placeholder for dropping redundant columns from the training data. It currently does nothing."""
-
-    redundant_cols_to_drop = ['']
-
-    return None
 
 def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tract_geoid", test_size=0.2, val_size=0.2, random_state=RANDOM_SEED):
     """This function splits the master data into train, validation, and test sets based on a grouping column (e.g., tract_geoid).
