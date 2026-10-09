@@ -72,7 +72,8 @@ def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
                               'households_total', 'age_65_plus_proportion', 'renter_occupied_proportion', 'living_alone_households_proportion']
 
     cols_to_drop = [*location_cols_to_drop, *vestigial_cols_to_drop, *irrelevant_cols_to_drop, *redundant_cols_to_drop]
-
+    cols_to_drop = [c for c in cols_to_drop if c in master_df.columns]
+    
     return master_df.drop(columns=cols_to_drop)
 
 def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tract_geoid", test_size=0.2, val_size=0.2, random_state=RANDOM_SEED):
