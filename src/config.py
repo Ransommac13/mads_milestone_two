@@ -38,6 +38,7 @@ NY_STATE_BOUNDARIES_PATH = "data/geography/ny_state_boundary.parquet"
 OVERTURE_PLACES_AWS_PATH = "s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/*"
 OVERTURE_REGISTRY_AWS_PATH = "s3://overturemaps-us-west-2/registry/*.parquet"
 INTERIM_OVERTURE_PARQUET_PATH = "data/interim/external/overture_data.parquet"
+FIRST_SEEN_OVERTURE_PARQUET_PATH = "data/interim/external/overture_first_seen.parquet"
 FILTERED_OVERTURE_PARQUET_PATH = "data/interim/external/overture_filtered.parquet"
 
 AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_1977.csv"

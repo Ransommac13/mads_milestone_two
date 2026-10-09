@@ -71,6 +71,8 @@ def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
 def drop_redundant_cols():
     """This function is a placeholder for dropping redundant columns from the training data. It currently does nothing."""
 
+    redundant_cols_to_drop = ['']
+
     return None
 
 def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tract_geoid", test_size=0.2, val_size=0.2, random_state=RANDOM_SEED):

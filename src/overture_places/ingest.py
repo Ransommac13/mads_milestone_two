@@ -18,7 +18,8 @@ import pandas as pd
 import geopandas as gpd
 
 from src.config import CENSUS_STATE_BOUNDARIES_URL, NY_STATE_BOUNDARIES_PATH
-from src.config import OVERTURE_PLACES_AWS_PATH, OVERTURE_REGISTRY_AWS_PATH, INTERIM_OVERTURE_PARQUET_PATH, FILTERED_OVERTURE_PARQUET_PATH
+from src.config import OVERTURE_PLACES_AWS_PATH, OVERTURE_REGISTRY_AWS_PATH
+from src.config import INTERIM_OVERTURE_PARQUET_PATH, FIRST_SEEN_OVERTURE_PARQUET_PATH, FILTERED_OVERTURE_PARQUET_PATH
 
 def create_duckdb_connection():
 
@@ -161,7 +162,8 @@ def merge_places_first_seen(duckdb_conn: duckdb.DuckDBPyConnection, places_input
 
     return filtered_places_path
 
-def filter_places_by_date(duckdb_conn: duckdb.DuckDBPyConnection, filtered_places_path: Path, cutoff_date='2025-06-25'):
+def filter_places_by_date_and_confidence(duckdb_conn: duckdb.DuckDBPyConnection, filtered_places_path: Path,
+                                         cutoff_date='2025-06-25', confidence_threshold=0.90):
 
     filtered_places_path_sql = filtered_places_path.as_posix().replace("'", "''")
     
@@ -171,6 +173,7 @@ def filter_places_by_date(duckdb_conn: duckdb.DuckDBPyConnection, filtered_place
             FROM read_parquet('{filtered_places_path_sql}')
             WHERE CAST(substr(first_seen, 1, 10) AS DATE)
                 <= DATE '{cutoff_date}'
+                AND confidence >= {confidence_threshold}
         )
         TO '{filtered_places_path_sql}'
         (
@@ -179,10 +182,11 @@ def filter_places_by_date(duckdb_conn: duckdb.DuckDBPyConnection, filtered_place
         )
     """)
 
-    print(f"Wrote overture places data to {filtered_places_path}, filtered to places that existed on or before {cutoff_date}")
+    print(f"Wrote overture places data to {filtered_places_path}, ",
+          f"filtered to places that existed on or before {cutoff_date} ",
+          f"and confidence >= {confidence_threshold}")
 
-    return filtered_places_path, cutoff_date
-
+    return filtered_places_path, cutoff_date, confidence_threshold
 
 def validate_overture_ingest():
 
@@ -211,7 +215,7 @@ if __name__ == "__main__":
 
     overture_connection = create_duckdb_connection()
     interim_overture_parquet_path = Path(INTERIM_OVERTURE_PARQUET_PATH)
-    first_seen_parquet_path = Path("data/interim/overture_first_seen.parquet")
+    first_seen_parquet_path = Path(FIRST_SEEN_OVERTURE_PARQUET_PATH)
     filtered_overture_parquet_path = Path(FILTERED_OVERTURE_PARQUET_PATH)
 
     ## Only uncomment to rerun ingest of New York state boundaries.
@@ -225,8 +229,7 @@ if __name__ == "__main__":
     #add_first_seen_date(overture_connection, interim_overture_parquet_path, first_seen_parquet_path)
 
     merge_places_first_seen(overture_connection, interim_overture_parquet_path, first_seen_parquet_path, filtered_overture_parquet_path)
-    filter_places_by_date(overture_connection, filtered_overture_parquet_path)
+    filter_places_by_date_and_confidence(overture_connection, filtered_overture_parquet_path)
     
     validation_df = validate_overture_ingest()
     print(validation_df.head())
-
