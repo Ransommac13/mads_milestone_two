@@ -63,6 +63,8 @@ df3[numeric_columns].hist(
 plt.suptitle("Distributions of Numeric Columns")
 plt.tight_layout()
 plt.show()
+
+#need to produce scatterplot of predictors versus outcome var
 '''
 numeric_cols = df3.select_dtypes(include="number").columns
 
