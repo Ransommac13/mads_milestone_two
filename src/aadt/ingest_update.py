@@ -62,7 +62,8 @@ def load_road_segemnts(gdb_path, layer):
 
 
     if "Rmp" in roads.columns:
-        roads = roads[roads["Rmp"].fillna(0) == 0]
+        regualr_roads = roads["Rmp"].isna() | (roads["Rmp"].astype(str).str.strip() == "")
+        roads = roads[regualr_roads] 
 
     #rename prefix 
     rename_map = {
