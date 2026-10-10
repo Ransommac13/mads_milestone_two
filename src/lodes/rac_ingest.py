@@ -44,6 +44,18 @@ def aggregate_rac_to_block_group(rac_df):
     # rename -> rac_c000 so these columns are clearly labeled as WAC feature once merged
     bg_rac = bg_rac.rename(columns= {col: f"rac_{col.lower()}" for col in RAC_FEATURE_COLUMNS})
 
+    return add_proportion(bg_rac)
+
+JOB_COL = ['CE01', 'CE02']
+
+def add_proportion(bg_rac):
+
+    total_jobs = bg_rac["rac_c000"].where(bg_rac["rac_c000"] > 0)
+
+    for col in JOB_COL:
+        name = f"rac_{col.lower()}"
+        bg_rac[f"{name}_prop"] = bg_rac[name] / total_jobs
+
     return bg_rac
 
 def merge_rac_to_locations(location_df, bg_rac_df):
