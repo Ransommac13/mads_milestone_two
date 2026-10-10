@@ -8,6 +8,8 @@ from re import match
 
 import geopandas as gpd
 from pathlib import Path
+import numpy as np
+import re
 
 import pandas as pd
 
@@ -24,7 +26,26 @@ AADT_YEAR = "AADT_2025"
 coordinate_gps = "EPSG:32118"
 
 #retailer farther then this from meter distance, then won't count as a match
-max_distance =1600 #one mile
+max_distance =1600 #1mile
+
+def total_lanes(lanes_col):
+    """
+    convert the raw value for lanes column
+    ex: 2:2 || will be 2+2
+    1:1 || will be 1+1
+    """
+    if pd.isna(lanes_col):
+        return np.nan
+
+    numbers = re.findall(r"\d+", lanes_col)
+    if not numbers:
+        return np.nan
+    
+    total_road_lanes = sum(int(n) for n in numbers)
+
+    return total_road_lanes
+
+    
 
 def load_road_segemnts(gdb_path, layer):
     
@@ -39,6 +60,7 @@ def load_road_segemnts(gdb_path, layer):
     roads = roads[available_columns + ["geometry"]].copy()
     # remove retired or (highway) rmp
 
+
     if "Rmp" in roads.columns:
         roads = roads[roads["Rmp"].fillna(0) == 0]
 
@@ -50,7 +72,10 @@ def load_road_segemnts(gdb_path, layer):
         "Lanes": "aadt_lanes",
     }
     roads = roads.rename(columns = {k:v for k, v in rename_map.items() if k in roads.columns})
-    roads = roads.drop(columns = [c for c in "Rmp" if c in roads.columns])
+    roads = roads.drop(columns = [c for c in ("Rmp") if c in roads.columns])
+
+    if "aadt_lanes" in roads.columns:
+        roads["aadt_lanes"] = roads["aadt_lanes"].map(total_lanes)
 
     #convert to meter base coordinate system
     return roads.to_crs(coordinate_gps)
@@ -126,9 +151,10 @@ if __name__ ==  "__main__":
     validation_results = check_merge(enriched_locations)
     print(validation_results)
 
+    # print(enriched_locations[["agtno", "aadt_lanes"]].dropna().head(10))
+
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
     # enriched_locations.to_parquet(str(OUTPUT_PATH), index=False)
     enriched_locations.drop(columns="geometry").to_parquet(OUTPUT_PATH, index=False)
     print(f"saved: {OUTPUT_PATH}")
-
 
