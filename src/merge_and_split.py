@@ -74,7 +74,7 @@ def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the master data of any columns that are not features or help to identify the retailer."""
 
     location_cols_to_drop = ['busnm', 'busaddr', 'buscity', 'buszip', 'geometry']
-    vestigial_cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2']
+    vestigial_cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2', 'Rmp']
     irrelevant_cols_to_drop = ['aadt_road_name', 'nonfamily_multiperson_households_proportion']
     redundant_cols_to_drop = ['wac_ce01', 'wac_ce02', 'wac_ce03', 'rac_ce01', 'rac_ce02', 'rac_ce03', 
                               'D1A', 'D1C8_RET', 'D1C8_OFF', 'D1C8_IND', 'D1C8_SVC', 'D1C8_ENT', 'D1C8_ED', 'D1C8_HLTH', 'D1C8_PUB',
