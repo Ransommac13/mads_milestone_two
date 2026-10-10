@@ -11,9 +11,10 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 
-from config import TRAINING_MASTER_PARQUET_PATH, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH, RANDOM_SEED
+from config import RANDOM_SEED, FINAL_LOCATION_PARQUET_PATH, FINAL_SALES_PARQUET_PATH
+from config import TRAINING_MASTER_PARQUET_PATH, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
 
-def merge_all_external_features(location_path: Path, feature_dir: Path, id_col: str = "agtno"):
+def merge_all_external_features(location_path: Path, sales_path: Path, feature_dir: Path, id_col: str = "agtno"):
     """
     Merge retailer-level parquet files containing potential features from external datasets.
     External datasets include EPA, LODES RAC, LODES WAC, Overture Places, and AADT.
@@ -59,7 +60,15 @@ def merge_all_external_features(location_path: Path, feature_dir: Path, id_col: 
 
         print(f"Merged {feature_path.name} with location_base. New shape: {location_base.shape}")
 
-    return location_base
+    sales_data = pd.read_parquet(sales_path)
+    sales_data = sales_data[['agtno', 'avg_daily_sales']]
+    # Confirm location_base has just one row per retailer.
+    if sales_data[id_col].duplicated().any():
+        raise ValueError(f"Duplicate {id_col} values found in sales_data.")
+    
+    master_data_df = sales_data.merge(location_base, on=id_col, how='left', validate='one_to_one')
+
+    return master_data_df
 
 def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the master data of any columns that are not features or help to identify the retailer."""
@@ -101,21 +110,21 @@ def grouped_train_val_test_split(master_data: pd.DataFrame, group_col: str = "tr
 
 if __name__ == '__main__':
 
-    location_path = Path("data/final/location_data.parquet")
+    location_path = Path(FINAL_LOCATION_PARQUET_PATH)
+    sales_path = Path(FINAL_SALES_PARQUET_PATH)
     feature_dir = Path("data/interim/external/merged_with_loc")
     output_path = Path(TRAINING_MASTER_PARQUET_PATH)
 
-    master_data = merge_all_external_features(location_path, feature_dir)
+    master_data = merge_all_external_features(location_path, sales_path, feature_dir)
     master_data = clean_master_data(master_data)
 
-    master_data.to_parquet(output_path, index=False)
-    print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
+    master_data_final = master_data.dropna(subset=["tract_geoid"]).copy()
+    print(f"Number of rows dropped: {master_data.shape[0] - master_data_final.shape[0]}")
 
-    temp_split_df = master_data.dropna(subset=["tract_geoid"]).copy()
-    print("This drops retailers with missing tract_geoid values. Purely temporary until we can resolve address issues.")
-    print(f"Number of rows dropped: {master_data.shape[0] - temp_split_df.shape[0]}")
+    master_data_final.to_parquet(output_path, index=False)
+    print(f"Master data saved to {output_path}. Shape: {master_data_final.shape}")
 
-    train, val, test = grouped_train_val_test_split(temp_split_df, group_col="tract_geoid", test_size=0.2, val_size=0.2)
+    train, val, test = grouped_train_val_test_split(master_data_final, group_col="tract_geoid", test_size=0.2, val_size=0.2)
     train.to_parquet(Path(TRAIN_DATA_PARQUET_PATH), index=False)
     val.to_parquet(Path(VALIDATION_DATA_PARQUET_PATH), index=False)
     test.to_parquet(Path(TEST_DATA_PARQUET_PATH), index=False)
