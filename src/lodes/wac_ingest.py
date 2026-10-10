@@ -16,17 +16,42 @@ OUTPUT_PATH = PROJECT_ROOT / LODES_WAC_PARQUET_PATH
 # CNS -> jobs by industry sector 
 # CE -> jobs by earnings tier
 
-WAC_FEATURE_COLUMNS = [
+"""
+CNS01  (Agriculture, Forestry, Fishing and Hunting)
+CNS02 (Mining, Quarrying, and Oil and Gas Extraction)
+CNS03  (Utilities)
+CNS04  (Construction)
+CNS05  (Manufacturing)
+CNS06  (Wholesale Trade)
+CNS07  (Retail Trade)
+CNS08 (Transportation and Warehousing)
+CNS09 (Information)
+CNS10 (Finance and Insurance)
+CNS11 (Real Estate and Rental and Leasing)
+CNS12  (Professional, Scientific, and Technical Services)
+CNS13  (Management of Companies and Enterprises)
+CNS14  (Administrative and Support and Waste
+Management and Remediation Services)
+CNS15  (Educational Services)
+CNS16 (Health Care and Social Assistance)
+CNS17  (Arts, Entertainment, and Recreation)
+CNS18  (Accommodation and Food Services)
+CNS19  (Other Services [except Public Administration])
+CNS20  (Public Administration)
+
+
+"""
+
+CNS_COLUMNS = ["CNS{:02d}".format(i) for i in range (1,21)]
+
+WAC_FEATURE_COLUMNS = CNS_COLUMNS + [
     "C000", # total jobs
-    "CNS07", # retail trade jobs
-    "CNS18", # accommodation and food services jobs
     "CE01", # jobs with earnings $1250/month or less
     "CE02", # jobs with earnings $1251-$3333/month
     "CE03", # jobs with earnings greater than  $3333
 ]
 
 def load_lodes_wac(wac_csv_path):
-
     # read the gzipped CSV 
     wac_df = pd.read_csv(wac_csv_path, dtype={"w_geocode": "string"}, compression="gzip")
 
