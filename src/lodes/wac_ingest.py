@@ -76,7 +76,20 @@ def aggregate_wac_to_block_group(wac_df):
     # rename -> wac_c000 so these columns are clearly labeled as WAC feature once merged
     bg_wac = bg_wac.rename(columns= {col: f"wac_{col.lower()}" for col in WAC_FEATURE_COLUMNS})
 
+    return add_proportion(bg_wac)
+
+JOB_COL = ['CE01', 'CE02']
+
+def add_proportion(bg_wac):
+
+    total_jobs = bg_wac["wac_c000"].where(bg_wac["wac_c000"] > 0)
+
+    for col in JOB_COL:
+        name = f"wac_{col.lower()}"
+        bg_wac[f"{name}_prop"] = bg_wac[name] / total_jobs
+
     return bg_wac
+
 
 def merge_wac_to_locations(location_df, bg_wac_df):
 
