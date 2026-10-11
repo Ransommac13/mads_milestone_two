@@ -37,7 +37,7 @@ summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA2.csv', 
 
 #hide row agtno = 113165
 #df3 = df3.drop(index=4986)
-#df3 = df3[df3["avg_daily_sales"] != 593051.3767123290]
+#df3 = df3[df3["avg_daily_sales"] <= 10000]
 
 import matplotlib.pyplot as plt
 
@@ -85,10 +85,10 @@ for ax, col in zip(axes.flat, numeric_columns):
 plt.tight_layout()
 plt.show()
 '''
-
+'''
 plots_per_page = 5
 x_max = 10_000
-y_max = 5_000
+y_max = 10_000
 
 for start in range(0, len(numeric_columns), plots_per_page):
     columns_to_plot = numeric_columns[start:start + plots_per_page]
@@ -107,6 +107,95 @@ for start in range(0, len(numeric_columns), plots_per_page):
         ax.set_ylim(0, y_max)
 
         ax.set_title(f"{col} vs. avg_daily_sales")
+        ax.set_xlabel("avg_daily_sales")
+        ax.set_ylabel(col)
+        ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+  
+
+plots_per_page = 5
+
+for start in range(0, len(numeric_columns), plots_per_page):
+    columns_to_plot = numeric_columns[start:start + plots_per_page]
+
+    fig, axes = plt.subplots(
+        nrows=len(columns_to_plot),
+        ncols=1,
+        figsize=(10, 3 * len(columns_to_plot)),
+        squeeze=False,
+    )
+
+    for ax, col in zip(axes.flat, columns_to_plot):
+        x = df3["avg_daily_sales"]
+        y = df3[col]
+
+        ax.scatter(x, y, alpha=0.7)
+
+        # Set each axis to the corresponding column's min and max
+        ax.set_xlim(x.min(), x.max())
+        ax.set_ylim(y.min(), y.max())
+
+        ax.set_title(f"{col} vs. avg_daily_sales")
+        ax.set_xlabel("avg_daily_sales")
+        ax.set_ylabel(col)
+        ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+    '''
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plots_per_page = 5
+
+for start in range(0, len(numeric_columns), plots_per_page):
+    columns_to_plot = numeric_columns[start:start + plots_per_page]
+
+    fig, axes = plt.subplots(
+        nrows=len(columns_to_plot),
+        ncols=1,
+        figsize=(10, 3 * len(columns_to_plot)),
+        squeeze=False,
+    )
+
+    for ax, col in zip(axes.flat, columns_to_plot):
+        plot_data = (
+            df3[["avg_daily_sales", col]]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+        )
+
+        x = plot_data["avg_daily_sales"]
+        y = plot_data[col]
+
+        if len(plot_data) > 1 and x.nunique() > 1 and y.nunique() > 1:
+            sns.kdeplot(
+                data=plot_data,
+                x="avg_daily_sales",
+                y=col,
+                fill=True,
+                cmap="viridis",
+                levels=20,
+                thresh=0.05,
+                ax=ax,
+            )
+
+            ax.set_xlim(x.min(), x.max())
+            ax.set_ylim(y.min(), y.max())
+        else:
+            ax.text(
+                0.5,
+                0.5,
+                "Not enough variation for density plot",
+                ha="center",
+                va="center",
+                transform=ax.transAxes,
+            )
+
+        ax.set_title(f"Density of {col} vs. avg_daily_sales")
         ax.set_xlabel("avg_daily_sales")
         ax.set_ylabel(col)
         ax.grid(alpha=0.3)
