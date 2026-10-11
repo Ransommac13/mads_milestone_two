@@ -41,7 +41,7 @@ def aggregate_rac_to_block_group(rac_df):
     )
 
         
-    # rename -> rac_c000 so these columns are clearly labeled as WAC feature once merged
+    # rename -> rac_c000
     bg_rac = bg_rac.rename(columns= {col: f"rac_{col.lower()}" for col in RAC_FEATURE_COLUMNS})
 
     return add_proportion(bg_rac)
