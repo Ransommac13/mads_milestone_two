@@ -7,7 +7,7 @@ df2 = pd.read_parquet('mads_milestone_two/data/final/master_data.parquet')
 
 #df2.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA.csv', index=False)
 
-#print(df2.columns)
+print(df2.columns)
 
 columns = ['agtno', 'avg_daily_sales', 'chain', 'bustype', 'competitors_within_1_mi', 'aadt_count',
        'aadt_functional_class', 'aadt_lanes', 'dist_to_read_m',
@@ -26,14 +26,14 @@ columns = ['agtno', 'avg_daily_sales', 'chain', 'bustype', 'competitors_within_1
        'wac_cns20', 'wac_c000', 'wac_ce01_prop', 'wac_ce02_prop']
 
 #subset to feature columns
-df3 = df2[columns]
+#df3 = df2[columns]
 
-summary = df3.describe()
+#summary = df3.describe()
 
 # Add a row at the top showing the missing value count
-summary.loc['missing_values'] = df3.isna().sum()
+#summary.loc['missing_values'] = df3.isna().sum()
 
-summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA2.csv', index=True)
+#summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA2.csv', index=True)
 
 #hide row agtno = 113165
 #df3 = df3.drop(index=4986)
@@ -144,7 +144,7 @@ for start in range(0, len(numeric_columns), plots_per_page):
 
     plt.tight_layout()
     plt.show()
-    '''
+    
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -202,3 +202,4 @@ for start in range(0, len(numeric_columns), plots_per_page):
 
     plt.tight_layout()
     plt.show()
+    '''
