@@ -2,25 +2,74 @@
 
 import pandas as pd
 
-df2 = pd.read_parquet('mads_milestone_two/data/final/master_data.parquet')
-#print(df2)
+df2 = pd.read_parquet('mads_milestone_two/data/modeling/train_data.parquet')
 
-#df2.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA.csv', index=True)
+string_cols = ["chain", "bustype"]  # replace with your column names
+
+# Keep these columns as pandas strings
+df2[string_cols] = df2[string_cols].astype("string")
+
+# Convert all remaining columns to numeric
+numeric_cols = df2.columns.difference(string_cols)
+df2[numeric_cols] = df2[numeric_cols].apply(
+    pd.to_numeric,
+    errors="coerce"
+)
+
+#df2_numeric = df2.apply(pd.to_numeric, errors="coerce")
+
+print(df2.dtypes)
+
+import numpy as np
+import pandas as pd
+
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("mean_imputer",
+         SimpleImputer(strategy="mean"),
+         ["median_household_income", "total_population", "age_18_29_proportion", "age_30_64_proportion", 
+          "bachelors_degree_proportion_25plus", "labor_force_participation_rate", "family_households_proportion",
+            "D3A", "NatWalkInd", "rac_ce01_prop", "rac_ce02_prop", "wac_ce01_prop", "wac_ce02_prop"]),
+
+        ("median_imputer",
+         SimpleImputer(strategy="median"),
+         ["poverty_rate", "post_grad_degree_proportion_25plus", "unemployment_rate", "owner_occupied_proportion",
+           "no_vehicle_households_proportion", "D1B", "D1C", "commercial_places_within_1_mi", "community_places_within_1_mi",
+           "rac_c000", "wac_cns01", "wac_cns02", "wac_cns03", "wac_cns04", "wac_cns05", "wac_cns06", "wac_cns07", "wac_cns08",
+             "wac_cns09", "wac_cns10", "wac_cns11", "wac_cns12", "wac_cns13", "wac_cns14", "wac_cns15", "wac_cns16", "wac_cns17",
+             "wac_cns18", "wac_cns19", "wac_cns20", "wac_c000"])
+    ],
+    remainder="passthrough",
+    verbose_feature_names_out=False
+)
+
+preprocessor.set_output(transform="pandas")
+
+
+df_imputed = preprocessor.fit_transform(df2)
+
+print(df_imputed)
+
+
+df_imputed.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012.csv', index=True)
 
 #print(df2.columns)
 
 #subset to feature columns
 #df3 = df2[columns]
 
-summary = df2.describe()
+summary = df_imputed.describe()
 
 # Add a row at the top showing the missing value count
-summary.loc['missing_values'] = df2.isna().sum()
+summary.loc['missing_values'] = df_imputed.isna().sum()
 
-#summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA2.csv', index=True)
-
+summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012b.csv', index=True)
+'''
 #hide row agtno = 113165
-df3 = df2.drop(index=4984)
+#df3 = df2.drop(index=4984)
 #df3 = df3[df3["avg_daily_sales"] <= 10000]
 #print(df2.iloc[4984])
 
@@ -33,7 +82,7 @@ import matplotlib.pyplot as plt
 #plt.ylabel("Frequency")
 #plt.title(f"Distribution of {column}")
 #plt.show()
-'''
+
 numeric_columns = df2.select_dtypes(include="number").columns
 
 df2[numeric_columns].hist(
