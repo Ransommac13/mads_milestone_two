@@ -25,7 +25,7 @@ def merge_all_external_features(location_path: Path, sales_path: Path, feature_d
     - address/location columns are duplicated across feature files
     """
 
-    shared_cols = ['busnm', 'busaddr', 'buscity', 'buszip', 'chain', 'bustype', 'longitude', 'latitude', 'geometry', 'bg_geoid', 'tract_geoid', 'competitors_within_1_mi']
+    shared_cols = ['busnm', 'busaddr', 'buscity', 'buszip', 'chain', 'bustype', 'longitude', 'latitude', 'geometry', 'bg_geoid', 'tract_geoid', 'competitors_within_1_mi', 'region']
 
     location_base = pd.read_parquet(location_path)
 
@@ -59,7 +59,7 @@ def merge_all_external_features(location_path: Path, sales_path: Path, feature_d
         location_base = location_base.merge(features, on=id_col, how="left", validate="one_to_one")
 
         print(f"Merged {feature_path.name} with location_base. New shape: {location_base.shape}")
-
+    
     sales_data = pd.read_parquet(sales_path)
     sales_data = sales_data[['agtno', 'avg_daily_sales']]
     # Confirm location_base has just one row per retailer.
@@ -67,6 +67,9 @@ def merge_all_external_features(location_path: Path, sales_path: Path, feature_d
         raise ValueError(f"Duplicate {id_col} values found in sales_data.")
     
     master_data_df = sales_data.merge(location_base, on=id_col, how='left', validate='one_to_one')
+    # Drops retailers that were removed from the location data due to not physically existing or duplicating another retailer.
+    master_data_df = master_data_df.dropna(subset=['bg_geoid', 'tract_geoid'])
+    print(f"Merged sales_data with locaiton_base. New shape: {master_data_df.shape}")
 
     return master_data_df
 
@@ -118,13 +121,10 @@ if __name__ == '__main__':
     master_data = merge_all_external_features(location_path, sales_path, feature_dir)
     master_data = clean_master_data(master_data)
 
-    master_data_final = master_data.dropna(subset=["tract_geoid"]).copy()
-    print(f"Number of rows dropped: {master_data.shape[0] - master_data_final.shape[0]}")
+    master_data.to_parquet(output_path, index=False)
+    print(f"Master data saved to {output_path}. Shape: {master_data.shape}")
 
-    master_data_final.to_parquet(output_path, index=False)
-    print(f"Master data saved to {output_path}. Shape: {master_data_final.shape}")
-
-    train, val, test = grouped_train_val_test_split(master_data_final, group_col="tract_geoid", test_size=0.2, val_size=0.2)
+    train, val, test = grouped_train_val_test_split(master_data, group_col="tract_geoid", test_size=0.2, val_size=0.2)
     train.to_parquet(Path(TRAIN_DATA_PARQUET_PATH), index=False)
     val.to_parquet(Path(VALIDATION_DATA_PARQUET_PATH), index=False)
     test.to_parquet(Path(TEST_DATA_PARQUET_PATH), index=False)
