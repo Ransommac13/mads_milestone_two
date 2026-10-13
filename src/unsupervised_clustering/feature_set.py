@@ -8,14 +8,15 @@ This module defines the feature set by which we want to define a lottery retaile
 import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 
 from src.config import TRAIN_DATA_PARQUET_PATH
 from src.correlation_test.high_correlation import build_correlation_matrix, flag_high_correlation_matrix
 
 def withhold_variables(train_df: pd.DataFrame) -> pd.DataFrame:
 
-    # Exclude id and location variables, as well as the target variable.
-    clustering_df = train_df.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid'])
+    # Exclude id and location variables.
+    clustering_df = train_df.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid', 'region'])
     
     # Exclude categorical variables and the target variable for future cluster evaluation.
     clustering_df = clustering_df.drop(columns=['avg_daily_sales', 'chain', 'bustype', 'aadt_functional_class'])
@@ -74,13 +75,6 @@ def evaluate_correlation(clustering_df: pd.DataFrame, method="spearman", thresho
 
     return high_correlation_df
 
-def additional_feature_eng(clustering_df: pd.DataFrame) -> pd.DataFrame:
-
-    clustering_df['resident_employment_ratio'] = clustering_df['rac_c000'] / clustering_df['total_population'].replace(0, np.nan)
-    clustering_df = clustering_df.drop(columns='rac_c000')
-
-    return clustering_df
-
 def impute_missing_values(clustering_df: pd.DataFrame, imputer=None) -> pd.DataFrame:
 
     if imputer is None:
@@ -91,6 +85,32 @@ def impute_missing_values(clustering_df: pd.DataFrame, imputer=None) -> pd.DataF
 
     return imputed_df, imputer
 
+def inspect_skewness(imputed_df: pd.DataFrame):
+
+    skewness = imputed_df.skew().sort_values(key=abs, ascending=False)
+
+    return skewness.to_frame()
+
+def transform_skewed_features(imputed_df: pd.DataFrame) -> pd.DataFrame:
+
+    right_skewed_log_transform_vars = ["D1C", "commercial_places_within_1_mi", "competitors_within_1_mi"]
+    
+    transformed_df = imputed_df.copy()
+
+    for var in right_skewed_log_transform_vars:
+        transformed_df[f"{var}_log1p"] = np.log1p(transformed_df[var])
+        transformed_df = transformed_df.drop(columns=var)
+
+    return transformed_df
+
+def scale_features(transformed_df: pd.DataFrame) -> pd.DataFrame:
+
+    scaler = StandardScaler()
+    
+    scaled_df = pd.DataFrame(scaler.fit_transform(transformed_df), columns=transformed_df.columns, index=transformed_df.index)
+
+    return scaled_df
+
 
 if __name__ == '__main__':
 
@@ -99,7 +119,16 @@ if __name__ == '__main__':
     clustering_df = withhold_variables(train_df)
     clustering_df = wac_feature_eng(clustering_df)
     clustering_df = balance_feature_representation(clustering_df)
-    clustering_df = additional_feature_eng(clustering_df)
-    imputed_df = impute_missing_values(clustering_df)
+    imputed_df, imputer = impute_missing_values(clustering_df)
 
-    print(imputed_df[0].isna().sum())
+    skewness_df = inspect_skewness(imputed_df)
+
+    transformed_df = transform_skewed_features(imputed_df)
+    scaled_df = scale_features(transformed_df)
+
+    clustering_df.to_parquet("src/unsupervised_clustering/eda_data/preimputed_data.parquet")
+    imputed_df.to_parquet("src/unsupervised_clustering/eda_data/imputed_data.parquet")
+    skewness_df.to_csv("src/unsupervised_clustering/eda_data/skewness.csv")
+    scaled_df.to_parquet("src/unsupervised_clustering/eda_data/scaled_data.parquet")
+
+    print(scaled_df.head())
