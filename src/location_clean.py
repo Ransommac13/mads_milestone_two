@@ -23,9 +23,22 @@ import geopandas as gpd
 import censusgeocode as cg
 from sklearn.neighbors import BallTree
 
-from config import LOCATION_PARQUET_PATH, FINAL_LOCATION_PARQUET_PATH, NY_STATE_BLOCK_GROUP_PATH
+from config import LOCATION_PARQUET_PATH, FINAL_LOCATION_PARQUET_PATH, NY_STATE_BLOCK_GROUP_PATH, NY_STATE_COUNTY_LOOKUP_PATH
 
 EARTH_RADIUS_MILES = 3958.8
+
+NY_REGIONS = {
+    "New York City": ["Bronx", "Kings", "New York", "Queens", "Richmond"],
+    "Long Island": ["Nassau", "Suffolk"],
+    "Mid-Hudson": ["Dutchess", "Orange", "Putnam", "Rockland", "Sullivan", "Ulster", "Westchester"],
+    "Capital Region": ["Albany", "Columbia", "Greene", "Rensselaer", "Saratoga", "Schenectady", "Warren", "Washington"],
+    "Mohawk Valley": ["Fulton", "Herkimer", "Montgomery", "Oneida", "Otsego", "Schoharie"],
+    "Central New York": ["Cayuga", "Cortland", "Madison", "Onondaga", "Oswego"],
+    "Finger Lakes": ["Genesee", "Livingston", "Monroe", "Ontario", "Orleans", "Seneca", "Wayne", "Wyoming", "Yates"],
+    "Western New York": ["Allegany", "Cattaraugus", "Chautauqua", "Erie", "Niagara"],
+    "Southern Tier": ["Broome", "Chemung", "Chenango", "Delaware", "Schuyler", "Steuben", "Tioga", "Tompkins"],
+    "North Country": ["Clinton", "Essex", "Franklin", "Hamilton", "Jefferson", "Lewis", "St. Lawrence"]
+}
 
 def geocode_missing_lat_longs(location_df: pd.DataFrame):
     """Geocodes missing latitude and longitude values in the location DataFrame using the Census Geocoder API."""
@@ -112,6 +125,23 @@ def attach_census_bg(location_gdf, ny_bg_shapefile_path=NY_STATE_BLOCK_GROUP_PAT
 
     return location_gdf
 
+def assign_region(location_gdf, ny_regions:dict = NY_REGIONS):
+
+    county_lookup_df = pd.read_csv(NY_STATE_COUNTY_LOOKUP_PATH, dtype=str)
+    county_map = dict(zip(county_lookup_df['county_code'].astype(str).str.zfill(3), county_lookup_df['county_name']))
+
+    location_gdf['county_code'] = location_gdf['bg_geoid'].astype(str).str[2:5]
+
+    location_gdf['county'] = location_gdf['county_code'].map(county_map)
+
+    region_dict = {county : region for region, list_of_counties in ny_regions.items() for county in list_of_counties}
+    region_dict = {f"{county} County" : region for county, region in region_dict.items()}
+    location_gdf['region'] = location_gdf['county'].map(region_dict)
+
+    #location_gdf = location_gdf.drop(columns=['county_code', 'county'])
+
+    return location_gdf
+
 def convert_chain_indicator(location_gdf, chain_col='chain'):
 
     df = location_gdf.copy()
@@ -146,7 +176,10 @@ if __name__ == "__main__":
     location_data = geocode_missing_lat_longs(location_data)
     geo_located_data = convert_to_geodataframe(location_data)
 
-    final_location_data = attach_census_bg(geo_located_data, NY_STATE_BLOCK_GROUP_PATH)
+    bg_location_data = attach_census_bg(geo_located_data, NY_STATE_BLOCK_GROUP_PATH)
+    final_location_data = bg_location_data.dropna(subset=["bg_geoid"]).copy()
+    print(f"Number of rows dropped: {bg_location_data.shape[0] - final_location_data.shape[0]}")
+    final_location_data = assign_region(final_location_data)
     
     final_location_data = convert_chain_indicator(final_location_data)
     final_location_data = calc_competitor_counts(final_location_data, radius_miles=1)
