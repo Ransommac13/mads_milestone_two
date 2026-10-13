@@ -138,7 +138,7 @@ def assign_region(location_gdf, ny_regions:dict = NY_REGIONS):
     region_dict = {f"{county} County" : region for county, region in region_dict.items()}
     location_gdf['region'] = location_gdf['county'].map(region_dict)
 
-    #location_gdf = location_gdf.drop(columns=['county_code', 'county'])
+    location_gdf = location_gdf.drop(columns=['county_code', 'county'])
 
     return location_gdf
 
