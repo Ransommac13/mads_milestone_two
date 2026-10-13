@@ -240,24 +240,24 @@ for start in range(0, len(numeric_columns), plots_per_page):
 
 #looking at columns to determin what type of missing value imputation
 '''
-'agtno'                     (NA)
-'avg_daily_sales'           (no missing values)
-'chain'                     (string)
-'bustype'                   (string)
-'longitude'                 (NA)
-'latitude',                 (NA)
-'bg_geoid'                  (NA)                
-'tract_geoid'               (NA)
-'competitors_within_1_mi'   (no missing values)
-'aadt_count'                (over half missing)
-'aadt_functional_class'     (over half missing?)
-'aadt_lanes'                (over half missing)
-'dist_to_read_m'            (over half missing)
-'median_household_income'   (1495/12846 missing; mean impute)
-'total_population'          (95/14246 missing; mean impute)
-'age_18_29_proportion'      (167/14174; mean impute)
-'age_30_64_proportion'      (167/14174; mean impute)
-'poverty_rate'              (189/14152; median impute)
+'agtno'                                 (NA)
+'avg_daily_sales'                       (no missing values)
+'chain'                                 (string)
+'bustype'                               (string)
+'longitude'                             (NA)
+'latitude',                             (NA)
+'bg_geoid'                              (NA)                
+'tract_geoid'                           (NA)
+'competitors_within_1_mi'               (no missing values)
+'aadt_count'                            (over half missing)
+'aadt_functional_class'                 (over half missing?)
+'aadt_lanes'                            (over half missing)
+'dist_to_read_m'                        (over half missing)
+'median_household_income'               (1495/12846 missing; mean impute)
+'total_population'                      (95/14246 missing; mean impute)
+'age_18_29_proportion'                  (167/14174; mean impute)
+'age_30_64_proportion'                  (167/14174; mean impute)
+'poverty_rate'                          (189/14152; median impute)
 'bachelors_degree_proportion_25plus'    (168/14173; mean impute)
 'post_grad_degree_proportion_25plus'    (168/14173; median impute)
 'labor_force_participation_rate'        (167/14174; mean impute)
@@ -298,3 +298,17 @@ for start in range(0, len(numeric_columns), plots_per_page):
 'wac_ce01_prop'                         (10/14331; mean impute)
 'wac_ce02_prop'                         (10/14331; mean impute)
 '''
+
+                             
+          
+                 
+             
+                     
+
+
+   
+                 
+         
+      
+                                                        
+                     
