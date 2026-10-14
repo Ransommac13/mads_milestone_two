@@ -168,7 +168,7 @@ def pc_v_pc_scatterplot(X_pca, train_df: pd.DataFrame, pc_x=1, pc_y=2, color_by=
 
 if __name__ == '__main__':
 
-    unsupervised_train_df = pd.read_parquet("src/unsupervised_clustering/eda_data/scaled_data.parquet")
+    unsupervised_train_df = pd.read_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
 
     train_df['avg_daily_sales_log1p'] = np.log1p(train_df['avg_daily_sales'])
@@ -179,4 +179,4 @@ if __name__ == '__main__':
 
     #pc_v_pc_scatterplot(X_pca, train_df, 1, 3, color_by="avg_daily_sales_log1p", kind='hex')
 
-    X_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca.parquet")
+    X_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
