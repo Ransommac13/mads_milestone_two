@@ -11,6 +11,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 
 from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
 
@@ -99,6 +100,41 @@ def main_pipepline(X_train_df: pd.DataFrame):
     
     return full_preprocessor, X_train_processed
 
+def fit_PCA(X_train_processed: pd.DataFrame, agtno):
+
+    pca = PCA()
+
+    assert X_train_processed.index.equals(train_df.index)
+    assert agtno.is_unique
+
+    X_pca = pca.fit_transform(X_train_processed)
+
+    X_pca = pd.DataFrame(
+        X_pca,
+        columns=[f"PC{i+1}" for i in range(pca.n_components_)],
+        index=X_train_processed.index
+    )
+
+    X_pca["agtno"] = agtno.reindex(X_pca.index)
+    assert X_pca['agtno'].notna().all()
+
+    feature_names = X_train_processed.columns
+
+    return pca, X_pca, feature_names
+
+def transform_PCA(pca, processed_df: pd.DataFrame, agtno):
+
+    X_pca = pd.DataFrame(
+        pca.transform(processed_df),
+        columns=[f"PC{i+1}" for i in range(pca.n_components_)],
+        index=processed_df.index
+    )
+
+    X_pca["agtno"] = agtno.reindex(X_pca.index)
+    assert X_pca['agtno'].notna().all()
+
+    return X_pca
+
 if __name__ == "__main__":
 
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
@@ -117,9 +153,21 @@ if __name__ == "__main__":
     X_val_processed_df = pd.DataFrame(X_val_processed, columns=new_column_names, index=val_df.index)
     X_test_processed_df = pd.DataFrame(X_test_processed, columns=new_column_names, index=test_df.index)
 
-    X_train_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
-    X_val_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
-    X_test_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_test_processed.parquet")
+    #X_train_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
+    #X_val_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
+    #X_test_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_test_processed.parquet")
 
-    print("Preprocessed datasets written to parquet!")
-    print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
+    #print("Preprocessed datasets written to parquet!")
+    #print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
+
+    pca, X_train_pca, feature_names = fit_PCA(X_train_processed_df, train_df["agtno"])
+
+    X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
+    X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
+
+    X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
+    X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
+    X_test_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
+
+    print("PCs written to parquet!")
+    print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
