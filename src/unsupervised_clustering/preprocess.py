@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
+import joblib
 
 from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
 
@@ -140,8 +141,11 @@ if __name__ == "__main__":
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
     test_df = pd.read_parquet(TEST_DATA_PARQUET_PATH)
+
+    print(train_df.columns)
     
     preprocessor, X_train_processed = main_pipepline(train_df)
+    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
 
     X_val_processed = preprocessor.transform(val_df)
     X_test_processed = preprocessor.transform(test_df)
