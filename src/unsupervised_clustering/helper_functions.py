@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from src.correlation_test.high_correlation import build_correlation_matrix, flag_high_correlation_matrix
+#from src.correlation_test.high_correlation import build_correlation_matrix, flag_high_correlation_matrix
 
 def evaluate_correlation(clustering_df: pd.DataFrame, method="spearman", threshold = 0.75):
 
@@ -157,5 +157,30 @@ def pc_v_pc_scatterplot(X_pca, train_df: pd.DataFrame, pc_x=1, pc_y=2, color_by=
     else:
         ax.set_title(f"{x_col} vs {y_col}")
 
+    plt.tight_layout()
+    plt.show()
+
+def plot_gmm_results(results_df, metric='bic'):
+
+    """
+    Plot GMM evaluation metrics by number of components, with separate lines for each covariance structure.
+
+    Parameters:
+        results_df: DataFrame of GMM evaluation results
+        metric: 'bic' or 'val_log_likelihood'
+    """
+
+    if metric not in ["bic", "val_log_likelihood"]:
+        raise ValueError("metric must be 'bic' or 'val_log_likelihood'")
+
+    plt.figure(figsize=(8, 5))
+
+    sns.lineplot(data=results_df, x="n_components", y=metric, hue="covariance", marker="o")
+
+    plt.xlabel("Number of Components")
+    plt.ylabel("BIC" if metric == "bic" else "Validation Log-Likelihood")
+    plt.title(f"GMM Model Selection: {metric}")
+    plt.xticks(sorted(results_df["n_components"].unique()))
+    plt.legend(title="Covariance Structure")
     plt.tight_layout()
     plt.show()

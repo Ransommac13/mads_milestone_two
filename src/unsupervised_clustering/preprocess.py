@@ -165,9 +165,9 @@ if __name__ == "__main__":
     X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
 
-    X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
-    X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
-    X_test_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
+    #X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
+    #X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
+    #X_test_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
 
-    print("PCs written to parquet!")
-    print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
+    #print("PCs written to parquet!")
+    #print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
