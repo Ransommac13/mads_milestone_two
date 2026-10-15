@@ -9,8 +9,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import math
 
 #from src.correlation_test.high_correlation import build_correlation_matrix, flag_high_correlation_matrix
+from src.unsupervised_clustering.preprocess import CLUSTERING_FEATURES
 
 def evaluate_correlation(clustering_df: pd.DataFrame, method="spearman", threshold = 0.75):
 
@@ -182,5 +184,75 @@ def plot_gmm_results(results_df, metric='bic'):
     plt.title(f"GMM Model Selection: {metric}")
     plt.xticks(sorted(results_df["n_components"].unique()))
     plt.legend(title="Covariance Structure")
+    plt.tight_layout()
+    plt.show()
+
+def gmm_cluster_profile_heatmap(assignments: pd.DataFrame, train_df: pd.DataFrame):
+
+    assert len(assignments) == len(train_df)
+        
+    profile_df = train_df.merge(assignments, on='agtno', how='inner', validate='one_to_one')
+
+    overall_median = profile_df[CLUSTERING_FEATURES].median()
+    overall_iqr = profile_df[CLUSTERING_FEATURES].quantile(0.75) - profile_df[CLUSTERING_FEATURES].quantile(0.25)
+
+    cluster_medians = profile_df.groupby("cluster")[CLUSTERING_FEATURES].median()
+    standardized = (cluster_medians - overall_median) / overall_iqr.replace(0, np.nan)
+
+    plt.figure(figsize=(10,7))
+    sns.heatmap(standardized.T, cmap='coolwarm', center=0, vmin=-2, vmax=2, annot=True, fmt=".1f", linewidths=0.5)
+
+    plt.title("Standardized GMM Component Profiles")
+    plt.xlabel("Cluster")
+    plt.ylabel("Feature")
+    plt.tight_layout()
+    plt.show()
+
+    return standardized
+
+def gmm_cluster_categorical_dist(assignments: pd.DataFrame, train_df: pd.DataFrame, cat_var='region',
+                                 color_center=0.5, vmin=0.0, vmax=1.0):
+
+    assert len(assignments) == len(train_df)
+            
+    profile_df = train_df.merge(assignments, on='agtno', how='inner', validate='one_to_one')
+
+    cat_dist = pd.crosstab(profile_df['cluster'], profile_df[cat_var], normalize='index').round(3)
+
+    plt.figure(figsize=(10,7))
+    sns.heatmap(cat_dist.T, cmap='coolwarm', center=color_center, vmin=vmin, vmax=vmax, annot=True, fmt=".3f", linewidths=0.5)
+
+    plt.title("Cluster Assignment by Region")
+    plt.xlabel("Cluster")
+    plt.ylabel("Region")
+    plt.tight_layout()
+    plt.show()
+
+    return cat_dist
+
+def gmm_cluster_numerical_dist(assignments: pd.DataFrame, train_df: pd.DataFrame, clusters: list, features: list,
+                               ncols=2, figsize_per_plot=(6,4)):
+
+    assert len(assignments) == len(train_df)
+    profile_df = train_df.merge(assignments, on='agtno', how='inner', validate='one_to_one')
+
+    plot_df = profile_df[profile_df['cluster'].isin(clusters)].copy()
+    nrows = math.ceil(len(features)/ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(figsize_per_plot[0]*ncols, figsize_per_plot[1]*nrows), squeeze=False)
+    axes=axes.flatten()
+
+    for i, feature in enumerate(features):
+        sns.violinplot(data=plot_df,x='cluster', y=feature, order=clusters, inner="quart", cut=0, ax=axes[i])
+
+        axes[i].set_title(feature)
+        axes[i].set_xlabel("Cluster")
+        axes[i].set_ylabel("")
+
+    # Remove unused subplots
+    for j in range(len(features), len(axes)):
+        fig.delaxes(axes[j])
+
+    fig.suptitle(f"Feature Distributions: Clusters {clusters}", fontsize=14, y=1.01)
+
     plt.tight_layout()
     plt.show()

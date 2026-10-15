@@ -6,14 +6,18 @@ This module makes Reeses's peanut butter clusters (gross!).
 """
 
 import pandas as pd
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.mixture import GaussianMixture
 import joblib
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from src.config import RANDOM_SEED, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH
 from src.unsupervised_clustering.preprocess import CLUSTERING_FEATURES
 from src.unsupervised_clustering.preprocess import wac_feature_eng, select_features, build_preprocessing_pipeline, main_pipepline
+from src.unsupervised_clustering.helper_functions import gmm_cluster_profile_heatmap, gmm_cluster_categorical_dist, gmm_cluster_numerical_dist
 
 def evaluate_kmeans(X, k_range=range(2,13)):
     results = []
@@ -108,6 +112,17 @@ def component_profile_table(assignments: pd.DataFrame, train_df: pd.DataFrame):
 
     return profile_table
 
+def compare_gmm_assignments(assignments_a: pd.DataFrame, assignments_b: pd.DataFrame):
+
+    comparison = assignments_a[["agtno", "cluster"]].merge(assignments_b[["agtno", "cluster"]],
+        on="agtno", validate="one_to_one", suffixes=("_a", "_b"))
+
+    counts = pd.crosstab(comparison["cluster_b"], comparison["cluster_a"])
+
+    row_pct = pd.crosstab(comparison["cluster_b"], comparison["cluster_a"], normalize="index").round(3)
+
+    return counts, row_pct
+
 
 if __name__ == '__main__':
 
@@ -137,14 +152,9 @@ if __name__ == '__main__':
     #results_gmm_five_pcs = evaluate_gmm(train_pca5, val_pca5).sort_values("bic")
     #results_gmm_seven_pcs = evaluate_gmm(train_pca7, val_pca7).sort_values("bic")
 
-    #results_gmm_original.to_csv("src/unsupervised_clustering/eda_data/gmm_results_original.csv")
-    #results_gmm_five_pcs.to_csv("src/unsupervised_clustering/eda_data/gmm_results_five_pcs.csv")
-    #results_gmm_seven_pcs.to_csv("src/unsupervised_clustering/eda_data/gmm_results_seven_pcs.csv")
-
     # Initial model shortlist: (train_pca5, 5), (train_pca5, 9), (train_pca5, 11), (train_pca7, 9), (train_pca7, 12), (X_train_processed, 11) 
     gmm_5pc_9clust, assignments_5pc_9clust = fit_single_gmm(train_pca5, 9, pca_train_agtno)
-    #gmm_original_11clust, assignments_original_11clust = fit_single_gmm(X_train_processed, 11, X_train_raw['agtno'])
-    #summary_5pc_9clust = evaluate_gmm_components(gmm_5pc_9clust, assignments_5pc_9clust)
+    gmm_5pc_5clust, assignments_5pc_5clust = fit_single_gmm(train_pca5, 5, pca_train_agtno)
 
     # Evaluate component profiles using preimputed data.
     preprocessor = joblib.load("src/unsupervised_clustering/preprocess.joblib")
@@ -152,7 +162,12 @@ if __name__ == '__main__':
     profile_df_trimmed = profile_df_full[CLUSTERING_FEATURES + ['agtno']]
 
     # Trimmed model shortlist: (train_pca5, 5), (train_pca5, 9), (train_pca7, 9), (X_train_processed, 11) 
-    profile_5pc_9clust = component_profile_table(assignments_5pc_9clust, profile_df_full)
-    #profile_original_11clust = component_profile_table(assignments_original_11clust, profile_df_trimmed)
+    #profile_5pc_9clust = component_profile_table(assignments_5pc_9clust, profile_df_full)
 
-    print(profile_5pc_9clust)
+    counts, row_pct = compare_gmm_assignments(assignments_5pc_5clust, assignments_5pc_9clust)
+    print("COUNTS")
+    print(counts)
+    print("ROW_PCT")
+    print(row_pct)
+
+    gmm_cluster_profile_heatmap(assignments_5pc_5clust, profile_df_trimmed)
