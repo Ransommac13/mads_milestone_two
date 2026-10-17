@@ -141,14 +141,11 @@ if __name__ == "__main__":
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
     test_df = pd.read_parquet(TEST_DATA_PARQUET_PATH)
-
-    print(train_df.columns)
     
     preprocessor, X_train_processed = main_pipepline(train_df)
-    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
-
     X_val_processed = preprocessor.transform(val_df)
     X_test_processed = preprocessor.transform(test_df)
+    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
 
     column_names = preprocessor.named_steps['numeric_preprocessing'].get_feature_names_out()
     new_column_names = np.array(["log1p" + col[19:] if col.startswith("log_transform_cols") else col for col in column_names])
@@ -165,9 +162,9 @@ if __name__ == "__main__":
     #print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
 
     pca, X_train_pca, feature_names = fit_PCA(X_train_processed_df, train_df["agtno"])
-
     X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
+    #joblib.dump(pca, "src/unsupervised_clustering/pca.joblib")
 
     #X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
     #X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
