@@ -119,15 +119,15 @@ if __name__ == '__main__':
 
 
     for name, X_raw, X_processed, y in [("train", X_train, X_train_processed, y_train),
-                                         ("val", X_val, X_val, y_val),
-                                         ("test", X_test, X_test, y_test)]:
+                                         ("val", X_val, X_val_processed, y_val),
+                                         ("test", X_test, X_test_processed, y_test)]:
         processed = X_processed.drop(columns=["agtno"], errors="ignore")
         processed.insert(0, "agtno", X_raw["agtno"].values)
         processed["log_avg_daily_sales"] = y.values
         processed.to_csv(CSV_PATH / f"{name}_processed.csv", index=False)
 
-    print(f"Raw colimns: {X_train.shape[1]}. Processed features: {X_train_processed.shape[1]}")
-    print(f"Train shape: {X_train_processed.shape}. Val shapre:{X_val_processed.shape}. Test shape:{X_test_processed}.shape")
+    print(f"Raw columns: {X_train.shape[1]}. Processed features: {X_train_processed.shape[1]}")
+    print(f"Train shape: {X_train_processed.shape}. Val shape:{X_val_processed.shape}. Test shape:{X_test_processed.shape}")
     print(f"preprocessor saved to {PREPROCESSOR_PATH}")
     print(f"saved as csv to {CSV_PATH}")
 
