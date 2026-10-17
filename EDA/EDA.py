@@ -2,8 +2,22 @@
 
 import pandas as pd
 
-df2 = pd.read_parquet('mads_milestone_two/data/modeling/train_data.parquet')
+df = pd.read_parquet('mads_milestone_two/data/final/master_data.parquet')
+print(df.dtypes)
+df.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/EDA_master_20261016.csv', index=True)
+summary = df.describe()
+summary.loc['missing_values'] = df.isna().sum()
+summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/EDA_master_20261016b.csv', index=True)
 
+
+df2 = pd.read_parquet('mads_milestone_two/data/modeling/train_data.parquet')
+print(df2.dtypes)
+df2.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/EDA_train_20261016.csv', index=True)
+summary = df2.describe()
+summary.loc['missing_values'] = df2.isna().sum()
+summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/EDA_train_20261016b.csv', index=True)
+
+'''
 string_cols = ["chain", "bustype"]  # replace with your column names
 
 # Keep these columns as pandas strings
@@ -15,11 +29,14 @@ df2[numeric_cols] = df2[numeric_cols].apply(
     pd.to_numeric,
     errors="coerce"
 )
+'''
+#df2.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261015.csv', index=True)
 
 #df2_numeric = df2.apply(pd.to_numeric, errors="coerce")
 
-print(df2.dtypes)
+#print(df2.dtypes)
 
+'''
 import numpy as np
 import pandas as pd
 
@@ -47,26 +64,26 @@ preprocessor = ColumnTransformer(
 )
 
 preprocessor.set_output(transform="pandas")
+'''
+
+#df_imputed = preprocessor.fit_transform(df2)
+
+#print(df_imputed)
 
 
-df_imputed = preprocessor.fit_transform(df2)
-
-print(df_imputed)
-
-
-df_imputed.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012.csv', index=True)
+#df_imputed.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012.csv', index=True)
 
 #print(df2.columns)
 
 #subset to feature columns
 #df3 = df2[columns]
 
-summary = df_imputed.describe()
+#summary = df_imputed.describe()
 
 # Add a row at the top showing the missing value count
-summary.loc['missing_values'] = df_imputed.isna().sum()
+#summary.loc['missing_values'] = df_imputed.isna().sum()
 
-summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012b.csv', index=True)
+#summary.to_csv('/Users/brisabol/Documents/MADS/SIADS 696/dataexplore_EDA_20261012b.csv', index=True)
 '''
 #hide row agtno = 113165
 #df3 = df2.drop(index=4984)
