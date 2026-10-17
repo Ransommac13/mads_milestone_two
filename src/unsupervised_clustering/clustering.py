@@ -17,7 +17,9 @@ import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from src.config import RANDOM_SEED, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
+from src.config import RANDOM_SEED, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH
+from src.config import TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, TEST_PCA_PARQUET_PATH
+from src.config import GMM_PARQUET_DIR
 from src.unsupervised_clustering.preprocess import CLUSTERING_FEATURES
 from src.unsupervised_clustering.preprocess import wac_feature_eng, select_features, build_preprocessing_pipeline, main_pipepline
 from src.unsupervised_clustering.helper_functions import gmm_cluster_profile_heatmap, gmm_cluster_categorical_dist, gmm_cluster_numerical_dist
@@ -225,11 +227,11 @@ def export_gmm_features(gmm, X_pca_train: pd.DataFrame, X_pca_val: pd.DataFrame,
         assert np.allclose(result[prob_cols].sum(axis=1), 1)
         assert result["agtno"].is_unique
 
-        filepath = output_dir / f"{split_name}_gmm_features.parquet"
+        filepath = output_dir / f"X_gmm_{split_name}.parquet"
         result.to_parquet(filepath, index=False)
 
         outputs[split_name] = result
-        print(f"Saved {split_name} of shape {result.shape} to {str(output_dir)}")
+        print(f"Saved X_gmm_{split_name} of shape {result.shape} to {str(output_dir)}")
 
     return outputs
 
@@ -239,14 +241,12 @@ if __name__ == '__main__':
     X_train_raw = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     X_val_raw = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
     
-    X_train_processed = pd.read_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
-    X_val_processed = pd.read_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
+    X_train_processed = pd.read_parquet("src/unsupervised_clustering/processed_data/X_train_processed.parquet")
+    X_val_processed = pd.read_parquet("src/unsupervised_clustering/processed_data/X_val_processed.parquet")
 
-    X_pca_train_w_agtno = pd.read_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
-    X_pca_val_w_agtno = pd.read_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
-    X_pca_test_w_agtno = pd.read_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
-
-    print(X_pca_test_w_agtno.columns)
+    X_pca_train_w_agtno = pd.read_parquet(TRAIN_PCA_PARQUET_PATH)
+    X_pca_val_w_agtno = pd.read_parquet(VAL_PCA_PARQUET_PATH)
+    X_pca_test_w_agtno = pd.read_parquet(TEST_PCA_PARQUET_PATH)
 
     X_pca_train = X_pca_train_w_agtno.drop(columns='agtno')
     X_pca_val = X_pca_val_w_agtno.drop(columns='agtno')
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     gmm_primary, assignments_primary = fit_single_gmm(train_pca5, 5, pca_train_agtno, covariance_type='full', n_init=30, random_state=4)
     
     # Evaluate component profiles using preimputed data.
-    preprocessor = joblib.load("src/unsupervised_clustering/preprocess.joblib")
+    preprocessor = joblib.load("src/unsupervised_clustering/fitted_objects/preprocess.joblib")
     train_profile_full = preprocessor.named_steps['wac_engineering'].transform(X_train_raw) # Train data with engineered wac features.
     train_profile_trimmed = train_profile_full[CLUSTERING_FEATURES + ['agtno']]
     val_profile_full = preprocessor.named_steps['wac_engineering'].transform(X_val_raw)
@@ -280,6 +280,5 @@ if __name__ == '__main__':
 
     #overall_df, by_cluster_df, confidence_df = compare_gmm_confidence(gmm_primary, train_pca5, val_pca5)
 
-    gmm_output_dir = "src/unsupervised_clustering/test_data_dir"
-    final_gmm_feature_dfs = export_gmm_features(gmm_primary, X_pca_train_w_agtno, X_pca_val_w_agtno, X_pca_test_w_agtno,
-                                                gmm_output_dir, num_pcs=5)
+    #final_gmm_feature_dfs = export_gmm_features(gmm_primary, X_pca_train_w_agtno, X_pca_val_w_agtno, X_pca_test_w_agtno,
+    #                                            output_dir=GMM_PARQUET_DIR, num_pcs=5)

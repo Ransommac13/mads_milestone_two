@@ -5,6 +5,8 @@ preprocess.py
 This module creates a pipeline to preprocess the data for modeling.
 """
 
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
@@ -15,6 +17,7 @@ from sklearn.decomposition import PCA
 import joblib
 
 from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
+from src.config import TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, TEST_PCA_PARQUET_PATH
 
 CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'total_population', 'age_18_29_proportion', 'poverty_rate',
@@ -166,9 +169,13 @@ if __name__ == "__main__":
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
     #joblib.dump(pca, "src/unsupervised_clustering/pca.joblib")
 
-    #X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
-    #X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
-    #X_test_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
+    X_pca_train_path = Path(TRAIN_PCA_PARQUET_PATH)
+    X_pca_val_path = Path(VAL_PCA_PARQUET_PATH)
+    X_pca_test_path = Path(TEST_PCA_PARQUET_PATH)
+    X_pca_train_path.parent.mkdir(parents=True, exist_ok=True)
+    X_train_pca.to_parquet(str(X_pca_train_path), index=False, engine="pyarrow")
+    X_val_pca.to_parquet(str(X_pca_val_path), index=False, engine="pyarrow")
+    X_test_pca.to_parquet(str(X_pca_test_path), index=False, engine="pyarrow")
 
-    #print("PCs written to parquet!")
-    #print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
+    print("PCs written to parquet!")
+    print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
