@@ -77,6 +77,10 @@ if __name__ == "__main__":
     X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
     X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
 
+#main_features = ['competitors_within_1_mi',
+#       'aadt_count','median_household_income', 'total_population', 'poverty_rate','unemployment_rate', 
+#       'family_households_proportion', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000', 'rac_ce01_prop', 'wac_c000']
+
     #Add intercept
     X_train = sm.add_constant(X_train, has_constant="add")
     X_val = sm.add_constant(X_val, has_constant="add")
