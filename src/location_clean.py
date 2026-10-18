@@ -79,7 +79,8 @@ def drop_locations(locations_df: pd.DataFrame):
         '114708' : 'nonexistent',
         '113146' : 'duplicate retailer',
         '115042' : 'duplicate retailer',
-        '115552' : 'duplicate retailer'
+        '115552' : 'duplicate retailer',
+        '113165' : 'outlier sales figure'
         }
 
     locations["agtno"] = (locations["agtno"].astype("string").str.strip())
