@@ -23,10 +23,6 @@ NUMERIC_FEATURES = ['age_18_29_proportion', "age_30_64_proportion", 'poverty_rat
 CATEGORICAL_FEAUTURES = ["bustype", "chain", "region"]
 
 '''
-#Convert all columns except "chain" and "bustype" to numeric and impute missing values
-#Perform imputation of missing values on all columns except ignore_columns
-#Log transformation of columns that are skewed (matches columns that received median imputation)
-
 df[CATEGORICAL_FEAUTURES] = df[CATEGORICAL_FEAUTURES].astype("string")
 
 # Convert all remaining columns to numeric
@@ -35,23 +31,11 @@ NUMERIC_FEATURES = df.columns.difference(CATEGORICAL_FEAUTURES)
 df[NUMERIC_FEATURES] = df[NUMERIC_FEATURES].apply(
     pd.to_numeric,
     errors="coerce"
-)
-
-LOG_FEATURES = ["aadt_count", "aadt_functional_class", "aadt_lanes", "dist_to_read_m", "total_population",
-           "poverty_rate", "post_grad_degree_proportion_25plus", "unemployment_rate",
-           "no_vehicle_households_proportion", "D1B", "D1C", "commercial_places_within_1_mi", "community_places_within_1_mi",
-           "rac_c000", "wac_c000"] + [f"wac_cns{i:02d}" for i in range (1,21)]
-
-#cases that received mean imputation
-["median_household_income", "age_18_29_proportion", "age_30_64_proportion", 
-           "bachelors_degree_proportion_25plus", "labor_force_participation_rate", "family_households_proportion",
-           "owner_occupied_proportion", "D3A", "NatWalkInd", "rac_ce01_prop", "rac_ce02_prop", "wac_ce01_prop", "wac_ce02_prop"]
-
-#should log step be last in the pipeline???           
+)          
 '''
 
-PREPROCESSOR_PATH = Path("EDA/preprocessor.joblib")
-CSV_PATH = Path("EDA")
+PREPROCESSOR_PATH = Path("supervised/preprocessor.joblib")
+CSV_PATH = Path("supervised")
 
 def split_data(df):
     """
