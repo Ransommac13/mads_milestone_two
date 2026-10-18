@@ -5,6 +5,8 @@ preprocess.py
 This module creates a pipeline to preprocess the data for modeling.
 """
 
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
@@ -15,6 +17,8 @@ from sklearn.decomposition import PCA
 import joblib
 
 from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
+from src.config import TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, TEST_PCA_PARQUET_PATH
+from src.unsupervised_clustering.helper_functions import scree_plot, pc_loading_heatmap
 
 CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'total_population', 'age_18_29_proportion', 'poverty_rate',
@@ -141,14 +145,11 @@ if __name__ == "__main__":
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
     test_df = pd.read_parquet(TEST_DATA_PARQUET_PATH)
-
-    print(train_df.columns)
     
     preprocessor, X_train_processed = main_pipepline(train_df)
-    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
-
     X_val_processed = preprocessor.transform(val_df)
     X_test_processed = preprocessor.transform(test_df)
+    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
 
     column_names = preprocessor.named_steps['numeric_preprocessing'].get_feature_names_out()
     new_column_names = np.array(["log1p" + col[19:] if col.startswith("log_transform_cols") else col for col in column_names])
@@ -165,13 +166,22 @@ if __name__ == "__main__":
     #print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
 
     pca, X_train_pca, feature_names = fit_PCA(X_train_processed_df, train_df["agtno"])
-
     X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
+    #joblib.dump(pca, "src/unsupervised_clustering/pca.joblib")
 
-    #X_train_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_train.parquet")
-    #X_val_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_val.parquet")
-    #X_test_pca.to_parquet("src/unsupervised_clustering/eda_data/X_pca_test.parquet")
+    #X_pca_train_path = Path(TRAIN_PCA_PARQUET_PATH)
+    #X_pca_val_path = Path(VAL_PCA_PARQUET_PATH)
+    #X_pca_test_path = Path(TEST_PCA_PARQUET_PATH)
+    #X_pca_train_path.parent.mkdir(parents=True, exist_ok=True)
+    #X_train_pca.to_parquet(str(X_pca_train_path), index=False, engine="pyarrow")
+    #X_val_pca.to_parquet(str(X_pca_val_path), index=False, engine="pyarrow")
+    #X_test_pca.to_parquet(str(X_pca_test_path), index=False, engine="pyarrow")
 
     #print("PCs written to parquet!")
     #print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
+
+    #scree_plot(pca)
+    
+    #pc_loadings = pd.DataFrame(pca.components_.T, index=feature_names, columns=[f"PC{i+1}" for i in range(pca.n_components_)])
+    #pc_loading_heatmap(pc_loadings)

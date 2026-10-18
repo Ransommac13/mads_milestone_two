@@ -65,6 +65,12 @@ TEST_DATA_PARQUET_PATH = "data/modeling/test_data.parquet"
 FLAG_CORRELATION_CSV_PATH = "src/correlation_test/high_correlation_test.csv"
 TARGET_CORRELATION_CSV_PATH = "src/correlation_test/target_correlation_test.csv"
 
+TRAIN_PCA_PARQUET_PATH = "data/modeling/pca/X_pca_train.parquet"
+VAL_PCA_PARQUET_PATH = "data/modeling/pca/X_pca_val.parquet"
+TEST_PCA_PARQUET_PATH = "data/modeling/pca/X_pca_test.parquet"
+
+GMM_PARQUET_DIR = "data/modeling/gmm"
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
 load_dotenv(ENV_PATH, override=True)
