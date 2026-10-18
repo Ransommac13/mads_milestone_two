@@ -14,6 +14,7 @@ TARGET = "avg_daily_sales"
 LOG_FEATURES = ['competitors_within_1_mi', "commercial_places_within_1_mi", "aadt_count", 
                 "total_population", "D1C", "rac_c000", 'D1B'] + [f"wac_cns{i:02d}" for i in range (1,21)]
 
+
 NUMERIC_FEATURES = ['age_18_29_proportion', "age_30_64_proportion", 'poverty_rate',
        'bachelors_degree_proportion_25plus', 'owner_occupied_proportion',
        'family_households_proportion', 'no_vehicle_households_proportion','D3A', 'NatWalkInd', 'wac_ce01_prop', 'wac_ce02_prop',
