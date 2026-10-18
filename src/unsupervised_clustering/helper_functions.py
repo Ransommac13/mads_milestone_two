@@ -11,8 +11,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 
-from src.unsupervised_clustering.preprocess import CLUSTERING_FEATURES
-
+CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
+       'total_population', 'age_18_29_proportion', 'poverty_rate',
+       'bachelors_degree_proportion_25plus', 'owner_occupied_proportion',
+       'family_households_proportion', 'no_vehicle_households_proportion',
+       'D1C', 'D3A', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000',
+       'wac_ce01_prop', 'consumer_facing_jobs_proportion',
+       'industrial_and_log_jobs_proportion']
 
 def inspect_skewness(imputed_df: pd.DataFrame):
 
@@ -71,12 +76,12 @@ def scree_plot(pca):
     plt.tight_layout()
     plt.show()
 
-def pc_loading_heatmap(pc_loadings: pd.DataFrame):
+def pc_loading_heatmap(pc_loadings: pd.DataFrame, n_components=9):
 
     plt.figure(figsize=(12, 9))
 
     sns.heatmap(
-        pc_loadings.iloc[:, :10],
+        pc_loadings.iloc[:, :n_components],
         cmap="coolwarm",
         center=0,
         annot=True,
