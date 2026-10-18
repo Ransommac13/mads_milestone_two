@@ -34,8 +34,8 @@ df[NUMERIC_FEATURES] = df[NUMERIC_FEATURES].apply(
 )          
 '''
 
-PREPROCESSOR_PATH = Path("supervised/preprocessor.joblib")
-CSV_PATH = Path("supervised")
+PREPROCESSOR_PATH = Path("src/supervised/pre_processing_data/preprocessor.joblib")
+CSV_PATH = Path("src/supervised/pre_processing_data")
 
 def split_data(df):
     """
