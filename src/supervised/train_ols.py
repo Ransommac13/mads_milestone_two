@@ -15,9 +15,9 @@ from sklearn.metrics import (
 
 from src.config import TRAIN_DATA_PARQUET_PATH
 
-from preprocess_super import build_preprocessor, split_data
+from src.supervised.preprocess_super import build_preprocessor, split_data
 
-OUTPUT_DIR = Path("outputs/ols")
+OUTPUT_DIR = Path("src/supervised/outputs/ols")
 PREPROCESSOR_PATH = OUTPUT_DIR / "preprocessor.joblib"
 MODEL_PATH = OUTPUT_DIR / "ols_model.pickle"
 
