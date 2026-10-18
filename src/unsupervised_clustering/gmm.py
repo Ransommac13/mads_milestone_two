@@ -1,6 +1,6 @@
 """
 
-clustering.py
+gmm.py
 
 This module makes Reeses's peanut butter clusters (gross!).
 """
