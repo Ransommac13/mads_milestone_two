@@ -1,119 +1,101 @@
-#train_ols.py file
+'''
+train_ols.py file
 
-from pathlib import Path
+1 - Fit preprocessing only on training data.
+2 - Transform training and validation data using that fitted preprocessor.
+3 - Fit OLS only on the transformed training data.
+4 - Predict and evaluate on validation data.
+5 - Use validation results to make model-development choices.
+6 - After finalizing all choices, evaluate once on the untouched test data.
+'''
 
 import joblib
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-
+from pathlib import Path
 from sklearn.metrics import mean_squared_error, r2_score
 
-from src.config import TRAIN_DATA_PARQUET_PATH
-from src.supervised.preprocess_super import build_preprocessor, split_data
+from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
 
+TARGET = "avg_daily_sales"
 OUTPUT_DIR = Path("src/supervised/outputs/ols")
-PREPROCESSOR_PATH = OUTPUT_DIR / "preprocessor.joblib"
-MODEL_PATH = OUTPUT_DIR / "ols_model.pickle"
+PREPROCESSOR_PATH = Path("src/supervised/pre_processing_data/preprocessor.joblib")
+
+MODEL_PATH = OUTPUT_DIR / "ols_model.joblib"
 SUMMARY_PATH = OUTPUT_DIR / "ols_summary.txt"
 METRICS_PATH = OUTPUT_DIR / "train_metrics.csv"
 RESIDUALS_PATH = OUTPUT_DIR / "train_residuals.csv"
 
-def main():
-    # Create the output directory.
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+def split_data(df):
+    """Separate raw features and log-transformed target."""
+    X = df.drop(columns=[TARGET])
+    y = np.log1p(df[TARGET])
+    return X, y
 
-    # Load only the training data.
-    train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
+def evaluation():
 
-    # This returns X and log1p(avg_daily_sales).
-    X_train, y_train = split_data(train_df)
+    #Training metrics on the log scale.
+    r_squared_log = r2_score(y_val, val_pred_log)
+    rmse_log = mean_squared_error(y_val, val_pred_log) ** 0.5
+    print("R² log scale:", r_squared_log)
+    print("RMSE log scale:", rmse_log)
 
-    # Fit preprocessing using only the training data.
-    preprocessor = build_preprocessor()
-    X_train_processed = preprocessor.fit_transform(X_train)
+    #Training metrics on original sales scale.
+    r_squared = r2_score(y_val, val_pred_sales)
+    rmse = mean_squared_error(y_val, val_pred_sales) ** 0.5
+    print("R²:", r_squared)
+    print("RMSE:", rmse)
 
-    # Do not use the identifier as a predictor.
-    X_train_processed = X_train_processed.drop(
-        columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],
-        errors="ignore",
-    )
-
-    # Add the intercept required by statsmodels OLS.
-    X_train_ols = sm.add_constant(
-        X_train_processed,
-        has_constant="add",
-    )
-
-    # Convert all model inputs to floating-point values.
-    X_train_ols = X_train_ols.astype(float)
-    y_train = y_train.astype(float)
-
-    # Check for values OLS cannot process.
-    if not np.isfinite(X_train_ols.to_numpy()).all():
-        raise ValueError(
-            "Training predictors contain missing or infinite values. "
-            "Check the preprocessing pipeline."
-        )
-
-    if not np.isfinite(y_train.to_numpy()).all():
-        raise ValueError(
-            "The training target contains missing or infinite values."
-        )
-
-    # Fit OLS to log1p(avg_daily_sales).
-    model = sm.OLS(
-        y_train.to_numpy(),
-        X_train_ols,
-    ).fit()
-
-    # In-sample predictions and residuals.
-    predicted_log_sales = model.predict(X_train_ols)
-    residuals = y_train.to_numpy() - np.asarray(predicted_log_sales)
-
-    # Training metrics on the log scale.
-    r_squared = r2_score(y_train, predicted_log_sales)
-    rmse = np.sqrt(mean_squared_error(y_train, predicted_log_sales))
-    rmse = np.exp(rmse)
-
-    print(f"Training R-squared: {r_squared:.4f}")
-    print(f"Training RMSE:      {rmse:.4f}")
-    print("\nOLS summary:")
-    print(model.summary())
-
-    # Save R-squared and RMSE.
-    metrics = pd.DataFrame(
-        {
-            "r_squared": [r_squared],
-            "rmse": [rmse],
-        }
-    )
+    # Save R-squared and RMSE in dataframe
+    metrics = pd.DataFrame({"r_squared": [r_squared],"rmse": [rmse], "r_squared log": [r_squared_log], "rmse log": [rmse_log]})
     metrics.to_csv(METRICS_PATH, index=False)
 
     # Save observations, fitted values, and residuals.
-    residual_results = pd.DataFrame(
-        {
-            "actual_log_sales": y_train.to_numpy(),
-            "predicted_log_sales": np.asarray(predicted_log_sales),
-            "residual": residuals,
-        }
-    )
-
-    residual_results.to_csv(
-        RESIDUALS_PATH,
-        index=False,
-    )
-
-    # Save the OLS summary.
-    SUMMARY_PATH.write_text(
-        model.summary().as_text(),
-        encoding="utf-8",
-    )
-
-    # Save the fitted preprocessor and model.
-    joblib.dump(preprocessor, PREPROCESSOR_PATH)
-    model.save(MODEL_PATH)
-
-
+    #residual_results = pd.DataFrame({"actual_log_sales": y_train.to_numpy(),"predicted_log_sales": np.asarray(predicted_log_sales),
+    #        "residual": residuals})
+    #residual_results.to_csv(RESIDUALS_PATH, index=False)
+  
 if __name__ == "__main__":
-    main()
+
+    #Load raw data.
+    train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
+    val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
+
+    #Split raw data
+    X_train_raw, y_train = split_data(train_df)
+    X_val_raw, y_val = split_data(val_df)
+
+    #Load the already-fitted preprocessor
+    preprocessor = joblib.load(PREPROCESSOR_PATH)
+
+    #Apply preprocessor to X_train_raw and X_val_raw
+    X_train = preprocessor.transform(X_train_raw)
+    X_val = preprocessor.transform(X_val_raw)
+
+    #Remove columns to not use as predictors
+    X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+    X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+
+    #Add intercept
+    X_train = sm.add_constant(X_train, has_constant="add")
+    X_val = sm.add_constant(X_val, has_constant="add")
+
+    # Ensure all columns are numeric
+    X_train = X_train.astype(float)
+    X_val = X_val.astype(float)
+
+    # Fit OLS on training data
+    ols_model = sm.OLS(y_train, X_train).fit()
+    print(ols_model.summary())
+
+    # Save the OLS summary and model
+    SUMMARY_PATH.write_text(ols_model.summary().as_text(), encoding="utf-8")
+    ols_model.save(MODEL_PATH)
+
+    #Evaluate using validation data and convert back to original sales scale
+    val_pred_log = ols_model.predict(X_val)
+    val_pred_sales = np.expm1(val_pred_log)
+    val_pred_sales = np.maximum(val_pred_sales, 0)
+
+    evaluation()
