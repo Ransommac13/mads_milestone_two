@@ -5,9 +5,9 @@ import joblib
 from pathlib import Path
 
 from src.supervised.preprocess_super import split_data
-from src.supervised.feature_sets import load_split
-from src.supervised.model_supervised import check_model, OUTPUT, FIGURE_PATH
-from src.supervised.visualizations_rf_gm import plot_predicted_vs_actual, plot_residuals, plot_error_by_group
+from src.supervised.rf_gb_model.feature_sets import load_split
+from src.supervised.rf_gb_model.model_supervised import check_model, OUTPUT, FIGURE_PATH
+from src.supervised.rf_gb_model.visualizations_rf_gm import plot_predicted_vs_actual, plot_residuals, plot_error_by_group
 
 if __name__ == '__main__':
 

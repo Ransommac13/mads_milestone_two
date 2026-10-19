@@ -19,8 +19,8 @@ from scipy.stats import spearmanr
 
 from src.config import RANDOM_SEED, TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH
 from src.supervised.preprocess_super import PREPROCESSOR_PATH, build_preprocessor, split_data
-from src.supervised.feature_sets import load_split, get_feature_sets
-from src.supervised.visualizations_rf_gm import plot_error_by_group, plot_feature_set_comparison, plot_predicted_vs_actual, plot_importance, plot_residuals
+from src.supervised.rf_gb_model.feature_sets import load_split, get_feature_sets
+from src.supervised.rf_gb_model.visualizations_rf_gm import plot_error_by_group, plot_feature_set_comparison, plot_predicted_vs_actual, plot_importance, plot_residuals
 
 OUTPUT = Path("src/supervised/outputs/model outputs")
 FIGURE_PATH = Path("src/supervised/outputs/model figures")
@@ -119,7 +119,7 @@ def compare_feature(X_train, y_train, groups, X_val, y_val):
                          "model": model_name,
                          "cv R2 (log)": cv_scores.mean(),
                          "train R2 (log)": train_scores["R2 (log)"],
-                         "val R2 (log)": val_scores["R2 (log)"],
+                         "val R2 (log)": val_scores['R2 (log)'],
                          "val MAE (log)": val_scores["MAE (log)"],
                          "val Spearman": val_scores["Spearman"],
                          "val MAE ($)": val_scores["MAE ($)"]})
@@ -156,7 +156,7 @@ def feature_importance(pipeline, X, y_log):
                                     scoring = "neg_mean_absolute_error", 
                                     random_state = RANDOM_SEED)
 
-    return pd.Series(result.importances_mean, index=X.columns).sort_values(ascending = False)
+    return pd.Series(result.importances_mean, index=columns).sort_values(ascending = False)
 
 
 if __name__ == '__main__':

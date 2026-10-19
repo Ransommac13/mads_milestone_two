@@ -42,7 +42,7 @@ def load_split(split):
     df = df.merge(gmm[["agtno"] + gmm_columns], on="agtno", how="left", validate="one_to_one")
 
     missing = df[pca_columns + gmm_columns].isna().sum().sum()
-    print(f"{split}: {missing} retailers have no PCA/GMM values. Re-run the unsupervised step")
+    print(f"{split}: {missing} retailers have no PCA/GMM values.")
 
     return df
 
