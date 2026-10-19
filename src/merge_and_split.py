@@ -76,7 +76,7 @@ def merge_all_external_features(location_path: Path, sales_path: Path, feature_d
 def clean_master_data(master_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the master data of any columns that are not features or help to identify the retailer."""
 
-    location_cols_to_drop = ['busnm', 'busaddr', 'buscity', 'buszip', 'geometry']
+    location_cols_to_drop = ['busnm', 'busaddr', 'buscity', 'buszip', 'geometry', 'region']
     vestigial_cols_to_drop = ['index_right', 'OBJECTID', 'STATEFP', 'COUNTYFP', 'TRACTCE', 'BLKGRPCE', 'STATEFP2', 'COUNTYFP2', 'TRACTCE2', 'BLKGRPCE2', 'Rmp']
     irrelevant_cols_to_drop = ['aadt_road_name', 'nonfamily_multiperson_households_proportion']
     redundant_cols_to_drop = ['wac_ce01', 'wac_ce02', 'wac_ce03', 'rac_ce01', 'rac_ce02', 'rac_ce03', 
