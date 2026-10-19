@@ -11,29 +11,16 @@ from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TE
 
 TARGET = "avg_daily_sales"
 
+LOG_FEATURES = ["competitors_within_1_mi", "commercial_places_within_1_mi", "community_places_within_1_mi", "aadt_count", 
+                "total_population", "D1C", "rac_c000", "D1B", "wac_c000"]
 
-
-LOG_FEATURES = ['competitors_within_1_mi', "commercial_places_within_1_mi", "community_places_within_1_mi", "aadt_count", 
-                "total_population", "D1C", "rac_c000", 'D1B', "NatWalkInd", "wac_c000"]
-
-NUMERIC_FEATURES = ['age_18_29_proportion', "age_30_64_proportion", 'poverty_rate',
-       'bachelors_degree_proportion_25plus', 'owner_occupied_proportion', "unemployment_rate",
-       'family_households_proportion', 'no_vehicle_households_proportion','D3A', 'NatWalkInd', 'wac_ce01_prop', 'wac_ce02_prop',
-       'rac_ce01_prop', 'rac_ce02_prop', "median_household_income"]
+NUMERIC_FEATURES = ["age_18_29_proportion", "age_30_64_proportion", "poverty_rate",
+       "bachelors_degree_proportion_25plus", "owner_occupied_proportion", "unemployment_rate",
+       "family_households_proportion", "no_vehicle_households_proportion","D3A", "NatWalkInd", "wac_ce01_prop", "wac_ce02_prop",
+       "rac_ce01_prop", "rac_ce02_prop", "median_household_income"]
 
 CATEGORICAL_FEAUTURES = ["bustype", "chain", "region"]
 
-'''
-df[CATEGORICAL_FEAUTURES] = df[CATEGORICAL_FEAUTURES].astype("string")
-
-# Convert all remaining columns to numeric
-NUMERIC_FEATURES = df.columns.difference(CATEGORICAL_FEAUTURES)
-
-df[NUMERIC_FEATURES] = df[NUMERIC_FEATURES].apply(
-    pd.to_numeric,
-    errors="coerce"
-)          
-'''
 
 PREPROCESSOR_PATH = Path("src/supervised/pre_processing_data/preprocessor.joblib")
 CSV_PATH = Path("src/supervised/pre_processing_data")
