@@ -33,34 +33,39 @@ def split_data(df):
     y = np.log1p(df[TARGET])
     return X, y
 
-def evaluation():
+def evaluate(y_true_log, y_true_sales, pred_log, pred_sales):
+    """Evaluate validation predictions on log and original scales."""
 
-    #Training metrics on the log scale.
-    r_squared_log = r2_score(y_val, val_pred_log)
-    rmse_log = mean_squared_error(y_val, val_pred_log) ** 0.5
-    print("R² log scale:", r_squared_log)
-    print("RMSE log scale:", rmse_log)
+    metrics = {
+        "r_squared_log": r2_score(y_true_log, pred_log),
+        "rmse_log": mean_squared_error(y_true_log, pred_log) ** 0.5,
+        "r_squared_sales": r2_score(y_true_sales, pred_sales),
+        "rmse_sales": mean_squared_error(y_true_sales, pred_sales) ** 0.5,
+    }
 
-    #Training metrics on original sales scale.
-    r_squared = r2_score(y_val, val_pred_sales)
-    rmse = mean_squared_error(y_val, val_pred_sales) ** 0.5
-    print("R²:", r_squared)
-    print("RMSE:", rmse)
+    for name, value in metrics.items():
+        print(f"{name}: {value:.4f}")
 
-    # Save R-squared and RMSE in dataframe
-    metrics = pd.DataFrame({"r_squared": [r_squared],"rmse": [rmse], "r_squared log": [r_squared_log], "rmse log": [rmse_log]})
-    metrics.to_csv(METRICS_PATH, index=False)
+    pd.DataFrame([metrics]).to_csv(METRICS_PATH, index=False)
 
-    # Save observations, fitted values, and residuals.
-    #residual_results = pd.DataFrame({"actual_log_sales": y_train.to_numpy(),"predicted_log_sales": np.asarray(predicted_log_sales),
-    #        "residual": residuals})
-    #residual_results.to_csv(RESIDUALS_PATH, index=False)
+    residual_results = pd.DataFrame({
+        "actual_log_sales": np.asarray(y_true_log),
+        "predicted_log_sales": np.asarray(pred_log),
+        "log_residual": np.asarray(y_true_log) - np.asarray(pred_log),
+        "actual_sales": np.asarray(y_true_sales),
+        "predicted_sales": np.asarray(pred_sales),
+        "sales_residual": np.asarray(y_true_sales) - np.asarray(pred_sales),
+    })
+    residual_results.to_csv(RESIDUALS_PATH, index=False)
   
 if __name__ == "__main__":
 
     #Load raw data.
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
+
+    #X_train_pca = pd.read_parquet('data/modeling/pca/X_pca_train.parquet')
+    #X_val_pca = pd.read_parquet('data/modeling/pca/X_pca_val.parquet')
 
     #Split raw data
     X_train_raw, y_train = split_data(train_df)
@@ -74,12 +79,34 @@ if __name__ == "__main__":
     X_val = preprocessor.transform(X_val_raw)
 
     #Remove columns to not use as predictors
-    X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
-    X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+    #X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+    #X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
 
-#main_features = ['competitors_within_1_mi',
-#       'aadt_count','median_household_income', 'total_population', 'poverty_rate','unemployment_rate', 
-#       'family_households_proportion', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000', 'rac_ce01_prop', 'wac_c000']
+    ######################features to find best model################
+    #columns_to_keep = ['competitors_within_1_mi',
+    #   'aadt_count','median_household_income', 'total_population', 'poverty_rate','unemployment_rate', 
+    #   'family_households_proportion', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000', 'rac_ce01_prop', 'wac_c000']
+
+    #columns_to_keep = ["competitors_within_1_mi", "commercial_places_within_1_mi", "community_places_within_1_mi", "aadt_count", 
+    #            "total_population", "D1C", "rac_c000", "D1B", "wac_c000"]
+
+    columns_to_keep = ['competitors_within_1_mi','commercial_places_within_1_mi','community_places_within_1_mi','aadt_count',
+                       'total_population','D1C','rac_c000','D1B','wac_c000','age_18_29_proportion','age_30_64_proportion',
+                       'poverty_rate','bachelors_degree_proportion_25plus','owner_occupied_proportion','unemployment_rate',
+                       'family_households_proportion','no_vehicle_households_proportion','D3A','NatWalkInd','wac_ce01_prop',
+                       'wac_ce02_prop','rac_ce01_prop','rac_ce02_prop','median_household_income']
+
+    X_train = X_train[columns_to_keep]
+    X_val = X_val[columns_to_keep]
+
+    #X_train = X_train.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid', 
+    #                                'commercial_places_within_1_mi', 'community_places_within_1_mi', 'wac_cns12', 
+    #                                'wac_c000', 'wac_cns19', 'competitors_within_1_mi', 'no_vehicle_households_proportion', 
+    #                                'total_population', 'rac_c000'],errors="ignore")
+    #X_val = X_val.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid', 
+    #                                'commercial_places_within_1_mi', 'community_places_within_1_mi', 'wac_cns12', 
+    #                                'wac_c000', 'wac_cns19', 'competitors_within_1_mi', 'no_vehicle_households_proportion', 
+    #                                'total_population', 'rac_c000'],errors="ignore")
 
     #Add intercept
     X_train = sm.add_constant(X_train, has_constant="add")
@@ -98,8 +125,15 @@ if __name__ == "__main__":
     ols_model.save(MODEL_PATH)
 
     #Evaluate using validation data and convert back to original sales scale
-    val_pred_log = ols_model.predict(X_val)
-    val_pred_sales = np.expm1(val_pred_log)
-    val_pred_sales = np.maximum(val_pred_sales, 0)
+    y_val_sales = val_df[TARGET].to_numpy()
 
-    evaluation()
+    val_pred_log = np.asarray(ols_model.predict(X_val))
+    val_pred_sales = np.maximum(np.expm1(val_pred_log), 0)
+
+    evaluate(
+        y_true_log=y_val.to_numpy(),
+        y_true_sales=y_val_sales,
+        pred_log=val_pred_log,
+        pred_sales=val_pred_sales,
+    )
+
