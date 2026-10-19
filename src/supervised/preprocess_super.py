@@ -34,9 +34,41 @@ def split_data(df):
 
     return x, y
 
-def build_preprocessor():
+# def build_preprocessor():
+#     """
+#     build preprocessor pipeline for supervised learning
+#     """
+#     categorical_pipeline = Pipeline([("imputer", SimpleImputer(strategy="most_frequent")),
+#                                      ("onehot", OneHotEncoder(min_frequency=30,
+#                                                               handle_unknown="infrequent_if_exist",
+#                                                               sparse_output=False))])
+
+#     # skewed numeric columns + log transform
+#     log_pipeline = Pipeline([("imputer", SimpleImputer(strategy="median")),
+#                             ('log_transform', FunctionTransformer(np.log1p, feature_names_out='one-to-one')),
+#                             ("scaler", StandardScaler())])
+
+#     # other numeric columns 
+#     numeric_pipeline = Pipeline([("imputer", SimpleImputer(strategy="median")),
+#                                  ("scaler", StandardScaler())])
+
+#     columns = ColumnTransformer([
+#         ("categorical", categorical_pipeline, CATEGORICAL_FEAUTURES),
+#         ("log_numeric", log_pipeline, LOG_FEATURES),
+#         ("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES)
+#         ], verbose_feature_names_out=False)
+
+#     columns.set_output(transform="pandas")
+
+#     return columns
+def build_preprocessor(use_original=True, use_categorical=True, extra_columns=None):
     """
     build preprocessor pipeline for supervised learning
+    default: original dataset
+    use_original: the log + other numeric columns
+    use_categorical: bustype , chain, region 
+    extra_columns : with the PCA or GMM components
+    
     """
     categorical_pipeline = Pipeline([("imputer", SimpleImputer(strategy="most_frequent")),
                                      ("onehot", OneHotEncoder(min_frequency=30,
@@ -52,11 +84,24 @@ def build_preprocessor():
     numeric_pipeline = Pipeline([("imputer", SimpleImputer(strategy="median")),
                                  ("scaler", StandardScaler())])
 
-    columns = ColumnTransformer([
-        ("categorical", categorical_pipeline, CATEGORICAL_FEAUTURES),
-        ("log_numeric", log_pipeline, LOG_FEATURES),
-        ("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES)
-        ], verbose_feature_names_out=False)
+    transformers = []
+    if use_categorical:
+        transformers.append(("categorical", categorical_pipeline, CATEGORICAL_FEAUTURES))
+    if use_original:
+        transformers.append(("log_numeric", log_pipeline, LOG_FEATURES))
+        transformers.append(("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES))
+
+    if extra_columns:
+        transformers.append(("extra features", "passthrough", extra_columns))
+
+    columns = ColumnTransformer(
+        transformers,verbose_feature_names_out=False)
+
+    # columns = ColumnTransformer([
+    #     ("categorical", categorical_pipeline, CATEGORICAL_FEAUTURES),
+    #     ("log_numeric", log_pipeline, LOG_FEATURES),
+    #     ("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES)
+    #     ], verbose_feature_names_out=False)
 
     columns.set_output(transform="pandas")
 
