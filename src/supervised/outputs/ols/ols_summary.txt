@@ -1,77 +1,84 @@
                             OLS Regression Results                            
 ==============================================================================
-Dep. Variable:        avg_daily_sales   R-squared:                       0.226
-Model:                            OLS   Adj. R-squared:                  0.222
-Method:                 Least Squares   F-statistic:                     52.39
+Dep. Variable:        avg_daily_sales   R-squared:                       0.228
+Model:                            OLS   Adj. R-squared:                  0.223
+Method:                 Least Squares   F-statistic:                     46.36
 Date:                Sun, 18 Oct 2026   Prob (F-statistic):               0.00
-Time:                        20:50:26   Log-Likelihood:                -12509.
-No. Observations:                8669   AIC:                         2.512e+04
-Df Residuals:                    8620   BIC:                         2.546e+04
-Df Model:                          48                                         
+Time:                        21:28:58   Log-Likelihood:                -12495.
+No. Observations:                8669   AIC:                         2.510e+04
+Df Residuals:                    8613   BIC:                         2.550e+04
+Df Model:                          55                                         
 Covariance Type:            nonrobust                                         
 ======================================================================================================
                                          coef    std err          t      P>|t|      [0.025      0.975]
 ------------------------------------------------------------------------------------------------------
-const                              -1.299e+12   1.69e+12     -0.771      0.441    -4.6e+12       2e+12
-bustype_BEVERAGE                   -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_BOWLING CENTERS            -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_CHECK CASHERS              -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_CLUB STORE                 -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_CONV. STORE                -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_DELI-GROCERY               -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_DEPARTMENT                 -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_DRUG STORE                 -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_GAS                        -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_GROCERY STORE              -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_LIQUOR                     -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_MISCELLANEOUS              -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_NEWS-SMOKE                 -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_NON PROFIT ORGANIZATION    -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_NYC NEWSSTAND              -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_RESTAURANT-HOTEL           -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_SPECIALTY (FOOD)           -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_SPECIALTY(NON FOOD)        -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_STATIONERY-CARD            -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_SUPERMARKETS               -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_VARIETY                    -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-bustype_infrequent_sklearn         -2.765e+10   3.59e+10     -0.771      0.441    -9.8e+10    4.27e+10
-chain_chain                         1.554e+12   2.02e+12      0.771      0.441    -2.4e+12    5.51e+12
-chain_independent                   1.554e+12   2.02e+12      0.771      0.441    -2.4e+12    5.51e+12
-region_Capital Region              -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Central New York            -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Finger Lakes                -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Long Island                 -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Mid-Hudson                  -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Mohawk Valley               -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_New York City               -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_North Country               -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Southern Tier               -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-region_Western New York            -2.272e+11   2.95e+11     -0.771      0.441   -8.05e+11     3.5e+11
-aadt_count                             0.0429      0.012      3.526      0.000       0.019       0.067
-D1C                                    0.0385      0.018      2.115      0.034       0.003       0.074
-D1B                                    0.1082      0.024      4.572      0.000       0.062       0.155
-age_18_29_proportion                  -0.0351      0.014     -2.476      0.013      -0.063      -0.007
-age_30_64_proportion                  -0.0026      0.014     -0.189      0.850      -0.029       0.024
-poverty_rate                          -0.0096      0.015     -0.662      0.508      -0.038       0.019
-bachelors_degree_proportion_25plus    -0.0203      0.015     -1.386      0.166      -0.049       0.008
-owner_occupied_proportion             -0.0252      0.019     -1.302      0.193      -0.063       0.013
-unemployment_rate                     -0.0029      0.012     -0.248      0.804      -0.026       0.020
-family_households_proportion           0.0069      0.015      0.456      0.649      -0.023       0.036
-D3A                                   -0.0584      0.020     -2.911      0.004      -0.098      -0.019
-NatWalkInd                             0.0052      0.017      0.305      0.760      -0.028       0.038
-wac_ce01_prop                          0.0227      0.012      1.829      0.067      -0.002       0.047
-wac_ce02_prop                          0.0243      0.013      1.873      0.061      -0.001       0.050
-rac_ce01_prop                         -0.0051      0.014     -0.365      0.715      -0.033       0.022
-rac_ce02_prop                         -0.0013      0.018     -0.072      0.942      -0.036       0.034
-median_household_income               -0.0131      0.017     -0.756      0.449      -0.047       0.021
+const                              -1.309e+12    1.7e+12     -0.770      0.441   -4.64e+12    2.02e+12
+bustype_BEVERAGE                   -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_BOWLING CENTERS            -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_CHECK CASHERS              -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_CLUB STORE                 -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_CONV. STORE                -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_DELI-GROCERY               -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_DEPARTMENT                 -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_DRUG STORE                 -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_GAS                        -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_GROCERY STORE              -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_LIQUOR                     -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_MISCELLANEOUS              -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_NEWS-SMOKE                 -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_NON PROFIT ORGANIZATION    -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_NYC NEWSSTAND              -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_RESTAURANT-HOTEL           -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_SPECIALTY (FOOD)           -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_SPECIALTY(NON FOOD)        -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_STATIONERY-CARD            -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_SUPERMARKETS               -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_VARIETY                    -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+bustype_infrequent_sklearn         -1.856e+10   2.41e+10     -0.770      0.441   -6.58e+10    2.87e+10
+chain_chain                         1.555e+12   2.02e+12      0.770      0.441    -2.4e+12    5.51e+12
+chain_independent                   1.555e+12   2.02e+12      0.770      0.441    -2.4e+12    5.51e+12
+region_Capital Region              -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Central New York            -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Finger Lakes                -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Long Island                 -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Mid-Hudson                  -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Mohawk Valley               -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_New York City               -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_North Country               -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Southern Tier               -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+region_Western New York            -2.276e+11   2.96e+11     -0.770      0.441   -8.07e+11    3.52e+11
+competitors_within_1_mi               -0.0712      0.041     -1.726      0.084      -0.152       0.010
+commercial_places_within_1_mi          0.1018      0.042      2.405      0.016       0.019       0.185
+community_places_within_1_mi           0.0129      0.038      0.343      0.732      -0.061       0.087
+aadt_count                             0.0338      0.013      2.698      0.007       0.009       0.058
+total_population                      -0.0082      0.017     -0.476      0.634      -0.042       0.026
+D1C                                    0.0110      0.023      0.475      0.635      -0.034       0.056
+rac_c000                               0.0437      0.018      2.388      0.017       0.008       0.080
+D1B                                    0.1089      0.028      3.904      0.000       0.054       0.164
+wac_c000                               0.0178      0.019      0.933      0.351      -0.020       0.055
+age_18_29_proportion                  -0.0380      0.014     -2.649      0.008      -0.066      -0.010
+age_30_64_proportion                  -0.0041      0.014     -0.299      0.765      -0.031       0.023
+poverty_rate                          -0.0078      0.015     -0.521      0.602      -0.037       0.021
+bachelors_degree_proportion_25plus    -0.0261      0.015     -1.766      0.077      -0.055       0.003
+owner_occupied_proportion             -0.0071      0.022     -0.329      0.742      -0.049       0.035
+unemployment_rate                     -0.0037      0.012     -0.308      0.758      -0.027       0.020
+family_households_proportion           0.0118      0.015      0.767      0.443      -0.018       0.042
+no_vehicle_households_proportion       0.0013      0.024      0.054      0.957      -0.047       0.049
+D3A                                   -0.0511      0.020     -2.517      0.012      -0.091      -0.011
+NatWalkInd                            -0.0017      0.018     -0.097      0.923      -0.036       0.033
+wac_ce01_prop                          0.0266      0.013      2.088      0.037       0.002       0.052
+wac_ce02_prop                          0.0260      0.013      1.959      0.050   -2.03e-05       0.052
+rac_ce01_prop                         -0.0057      0.014     -0.405      0.686      -0.034       0.022
+rac_ce02_prop                          0.0162      0.019      0.862      0.389      -0.021       0.053
+median_household_income               -0.0175      0.017     -1.004      0.315      -0.052       0.017
 ==============================================================================
-Omnibus:                      848.209   Durbin-Watson:                   1.780
-Prob(Omnibus):                  0.000   Jarque-Bera (JB):             1666.587
-Skew:                          -0.647   Prob(JB):                         0.00
-Kurtosis:                       4.714   Cond. No.                     1.19e+15
+Omnibus:                      864.378   Durbin-Watson:                   1.779
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             1684.997
+Skew:                          -0.660   Prob(JB):                         0.00
+Kurtosis:                       4.710   Cond. No.                     1.60e+15
 ==============================================================================
 
 Notes:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
-[2] The smallest eigenvalue is 2.43e-26. This might indicate that there are
+[2] The smallest eigenvalue is 2.36e-26. This might indicate that there are
 strong multicollinearity problems or that the design matrix is singular.

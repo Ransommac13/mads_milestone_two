@@ -64,7 +64,13 @@ def build_preprocessor():
 
 if __name__ == '__main__':
 
-    X_train, y_train = split_data(pd.read_parquet(TRAIN_DATA_PARQUET_PATH))
+    train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
+
+    #Remove extreme outlier from train dataset
+    train_df = train_df[train_df["avg_daily_sales"] <= 60000].copy()
+
+    #X_train, y_train = split_data(pd.read_parquet(TRAIN_DATA_PARQUET_PATH))
+    X_train, y_train = split_data(train_df)
     X_val, y_val = split_data(pd.read_parquet(VALIDATION_DATA_PARQUET_PATH))
     X_test, y_test = split_data(pd.read_parquet(TEST_DATA_PARQUET_PATH))
 
@@ -81,7 +87,7 @@ if __name__ == '__main__':
     print(" Test:", X_test_processed.isna().sum().sum())
 
 
-    print("Same colimn as train: ")
+    print("Same column as train: ")
     print(" validation: ", list(X_val_processed.columns) ==
           list(X_train_processed.columns))
     print(" test: ", list(X_test_processed.columns) ==
