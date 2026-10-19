@@ -1,0 +1,13 @@
+feature_set,model,cv R2 (log),train R2 (log),val R2 (log),val MAE (log),val Spearman,val MAE ($)
+category_only,random_forest,0.257,0.281,0.229,0.767,0.465,1398.324
+category_only,gradient_boosting,0.258,0.28,0.229,0.768,0.462,1402.55
+numeric_only,random_forest,0.045,0.288,0.044,0.856,0.182,1539.196
+numeric_only,gradient_boosting,0.028,0.213,0.028,0.864,0.15,1549.552
+original,random_forest,0.264,0.477,0.256,0.75,0.492,1381.403
+original,gradient_boosting,0.249,0.389,0.241,0.76,0.47,1400.664
+pca,random_forest,0.256,0.468,0.242,0.758,0.477,1390.447
+pca,gradient_boosting,0.244,0.374,0.234,0.764,0.464,1403.392
+gmm,random_forest,0.251,0.397,0.231,0.764,0.462,1398.158
+gmm,gradient_boosting,0.249,0.335,0.224,0.769,0.453,1405.607
+original_pca_gmm,random_forest,0.262,0.501,0.251,0.754,0.487,1385.753
+original_pca_gmm,gradient_boosting,0.248,0.408,0.243,0.761,0.478,1399.608

@@ -1,0 +1,3 @@
+model,best settings
+random_forest,"{'model__n_estimators': 200, 'model__min_samples_leaf': 5, 'model__max_features': 0.5, 'model__max_depth': None}"
+gradient_boosting,"{'model__min_samples_leaf': 20, 'model__max_iter': 300, 'model__max_depth': None, 'model__learning_rate': 0.02, 'model__l2_regularization': 10}"
