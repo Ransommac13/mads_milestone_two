@@ -19,7 +19,7 @@ NUMERIC_FEATURES = ["age_18_29_proportion", "age_30_64_proportion", "poverty_rat
        "family_households_proportion", "no_vehicle_households_proportion","D3A", "NatWalkInd", "wac_ce01_prop", "wac_ce02_prop",
        "rac_ce01_prop", "rac_ce02_prop", "median_household_income"]
 
-CATEGORICAL_FEAUTURES = ["bustype", "chain", "region"]
+CATEGORICAL_FEATURES = ["bustype", "chain", "region"]
 
 
 PREPROCESSOR_PATH = Path("src/supervised/pre_processing_data/preprocessor.joblib")
@@ -86,11 +86,12 @@ def build_preprocessor(use_original=True, use_categorical=True, extra_columns=No
 
     transformers = []
     if use_categorical:
-        transformers.append(("categorical", categorical_pipeline, CATEGORICAL_FEAUTURES))
+        transformers.append(("categorical", categorical_pipeline, CATEGORICAL_FEATURES))
     if use_original:
         transformers.append(("log_numeric", log_pipeline, LOG_FEATURES))
         transformers.append(("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES))
 
+    #"CHANGE PASSTHROUGH TO NUMERICAL FEATURE"
     if extra_columns:
         transformers.append(("extra features", "passthrough", extra_columns))
 
@@ -111,8 +112,8 @@ if __name__ == '__main__':
 
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
 
-    #Remove extreme outlier from train dataset
-    train_df = train_df[train_df["avg_daily_sales"] <= 60000].copy()
+    # #Remove extreme outlier from train dataset
+    # train_df = train_df[train_df["avg_daily_sales"] <= 60000].copy()
 
     #X_train, y_train = split_data(pd.read_parquet(TRAIN_DATA_PARQUET_PATH))
     X_train, y_train = split_data(train_df)
