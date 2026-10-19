@@ -74,12 +74,24 @@ if __name__ == "__main__":
     X_val = preprocessor.transform(X_val_raw)
 
     #Remove columns to not use as predictors
-    X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
-    X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+    #X_train = X_train.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
+    #X_val = X_val.drop(columns=["agtno", "longitude", "latitude", "bg_geoid", "tract_geoid"],errors="ignore")
 
-#main_features = ['competitors_within_1_mi',
-#       'aadt_count','median_household_income', 'total_population', 'poverty_rate','unemployment_rate', 
-#       'family_households_proportion', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000', 'rac_ce01_prop', 'wac_c000']
+    ######################features to find best model################
+    #columns_to_keep = ['competitors_within_1_mi',
+    #   'aadt_count','median_household_income', 'total_population', 'poverty_rate','unemployment_rate', 
+    #   'family_households_proportion', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000', 'rac_ce01_prop', 'wac_c000']
+    #X_train = X_train[columns_to_keep]
+    #X_val = X_val[columns_to_keep]
+
+    X_train = X_train.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid', 
+                                    'commercial_places_within_1_mi', 'community_places_within_1_mi', 'wac_cns12', 
+                                    'wac_c000', 'wac_cns19', 'competitors_within_1_mi', 'no_vehicle_households_proportion', 
+                                    'total_population', 'rac_c000'],errors="ignore")
+    X_val = X_val.drop(columns=['agtno', 'longitude', 'latitude', 'bg_geoid', 'tract_geoid', 
+                                    'commercial_places_within_1_mi', 'community_places_within_1_mi', 'wac_cns12', 
+                                    'wac_c000', 'wac_cns19', 'competitors_within_1_mi', 'no_vehicle_households_proportion', 
+                                    'total_population', 'rac_c000'],errors="ignore")
 
     #Add intercept
     X_train = sm.add_constant(X_train, has_constant="add")
@@ -103,3 +115,4 @@ if __name__ == "__main__":
     val_pred_sales = np.maximum(val_pred_sales, 0)
 
     evaluation()
+
