@@ -176,10 +176,11 @@ if __name__ == "__main__":
     ols_model = fit_ols(X_train, y_train)
     print(ols_model.summary())
 
-    metrics_df, residuals_df = evaluate(y_val=y_val, X_val=X_val, model=ols_model, retailer_ids=val_df['agtno'].to_numpy())
+    train_metrics_df, train_residuals_df = evaluate(y_val=y_train, X_val=X_train, model=ols_model, retailer_ids=train_df['agtno'].to_numpy())
+    val_metrics_df, val_residuals_df = evaluate(y_val=y_val, X_val=X_val, model=ols_model, retailer_ids=val_df['agtno'].to_numpy())
 
-    print("METRICS", metrics_df)
-    print("RESIDUALS", residuals_df.head())
+    print("TRAIN", train_metrics_df)
+    print("VAL", val_metrics_df)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     # Save the OLS summary and model
