@@ -1,0 +1,48 @@
+{
+  "features": [
+    "competitors_within_1_mi",
+    "commercial_places_within_1_mi",
+    "community_places_within_1_mi",
+    "aadt_count",
+    "total_population",
+    "D1C",
+    "rac_c000",
+    "D1B",
+    "wac_c000",
+    "age_18_29_proportion",
+    "age_30_64_proportion",
+    "poverty_rate",
+    "bachelors_degree_proportion_25plus",
+    "owner_occupied_proportion",
+    "unemployment_rate",
+    "family_households_proportion",
+    "no_vehicle_households_proportion",
+    "D3A",
+    "NatWalkInd",
+    "wac_ce01_prop",
+    "wac_ce02_prop",
+    "rac_ce01_prop",
+    "rac_ce02_prop",
+    "median_household_income",
+    "bustype",
+    "chain",
+    "region"
+  ],
+  "cat_features": [
+    "bustype",
+    "chain",
+    "region"
+  ],
+  "cv_group": "tract_geoid",
+  "best_params": {
+    "iterations": 1000,
+    "learning_rate": 0.03,
+    "depth": 6,
+    "l2_leaf_reg": 10,
+    "loss_function": "RMSE",
+    "thread_count": 1,
+    "random_seed": 42,
+    "verbose": false,
+    "allow_writing_files": false
+  }
+}
