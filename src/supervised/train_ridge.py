@@ -55,7 +55,6 @@ def split_data(df):
     y = np.log1p(df[TARGET])
     return X, y
 
-#####
 def merge_unsupervised_features(X_train: pd.DataFrame, features_df: pd.DataFrame, retailer_ids):
 
     X_train = X_train.copy()
@@ -133,7 +132,7 @@ def evaluate(y_val, X_val, model, retailer_ids=None):
     }
     
     metrics_df = pd.DataFrame([{
-        "model": "OLS",
+        "model": "Ridge",
         **metrics
     }])
     residuals_df = pd.DataFrame(residual_results)
@@ -181,15 +180,13 @@ if __name__ == "__main__":
 
     # Fit OLS on training data
     ridge_model = fit_ridge(X_train, y_train)
-    print(ridge_model.summary())
+    ridge = ridge_model.named_steps["ridgecv"]
+    print(f"Selected alpha: {ridge.alpha_}")
 
-    train_metrics_df, train_residuals_df = evaluate(y_val=y_train, X_val=X_train, model=ols_model, retailer_ids=train_df['agtno'].to_numpy())
-    val_metrics_df, val_residuals_df = evaluate(y_val=y_val, X_val=X_val, model=ols_model, retailer_ids=val_df['agtno'].to_numpy())
+    train_metrics_df, train_residuals_df = evaluate(y_val=y_train, X_val=X_train, model=ridge, retailer_ids=train_df['agtno'].to_numpy())
+    val_metrics_df, val_residuals_df = evaluate(y_val=y_val, X_val=X_val, model=ridge, retailer_ids=val_df['agtno'].to_numpy())
 
     print("TRAIN", train_metrics_df)
     print("VAL", val_metrics_df)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    # Save the OLS summary and model
-    #SUMMARY_PATH.write_text(ols_model.summary().as_text(), encoding="utf-8")
-    #ols_model.save(MODEL_PATH)
