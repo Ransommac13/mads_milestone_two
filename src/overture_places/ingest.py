@@ -8,9 +8,6 @@ Note: This module ingests AUG '26 data, merges with the GERS registry from Overt
 """
 
 from pathlib import Path
-import bisect
-import json
-from urllib.request import urlopen
 
 import duckdb
 import pandas as pd

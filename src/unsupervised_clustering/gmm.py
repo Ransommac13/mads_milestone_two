@@ -282,5 +282,4 @@ if __name__ == '__main__':
 
     #final_gmm_feature_dfs = export_gmm_features(gmm_primary, X_pca_train_w_agtno, X_pca_val_w_agtno, X_pca_test_w_agtno,
     #                                            output_dir=GMM_PARQUET_DIR, num_pcs=5)
-
-
+    joblib.dump(gmm_primary, "src/unsupervised_clustering/fitted_objects/gmm.joblib")

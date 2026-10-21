@@ -168,7 +168,7 @@ if __name__ == "__main__":
     pca, X_train_pca, feature_names = fit_PCA(X_train_processed_df, train_df["agtno"])
     X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
-    #joblib.dump(pca, "src/unsupervised_clustering/pca.joblib")
+    #joblib.dump(pca, "src/unsupervised_clustering/fitted_objects/pca.joblib")
 
     #X_pca_train_path = Path(TRAIN_PCA_PARQUET_PATH)
     #X_pca_val_path = Path(VAL_PCA_PARQUET_PATH)
