@@ -113,7 +113,7 @@ def group_permutation_importance(model_type, X_val, y_val):
     pipeline = joblib.load(OUTPUT / f"{model_type}_tuned.joblib")
     # score before any shuffling 
     base_r2 = r2_score(y_val, pipeline.predict(X_val[ALL_COLUMNS]))
-    rng = np.random.RandomState(42)
+    random_state = np.random.RandomState(42)
 
     rows = []
     for group_name, columns in GROUPS.items():
@@ -122,7 +122,7 @@ def group_permutation_importance(model_type, X_val, y_val):
         for _ in range(N_REPEAT):
             #every column in the group uses the same order
             shuffled = X_val[ALL_COLUMNS].copy()
-            order = rng.permutation(len(shuffled))
+            order = random_state.permutation(len(shuffled))
             shuffled[columns] = shuffled[columns].values[order]
 
             drops.append(base_r2 - r2_score(y_val, pipeline.predict(shuffled)))
