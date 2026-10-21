@@ -9,9 +9,9 @@ from multiprocessing import Value
 from pathlib import Path
 import pandas as pd
 
-#from src.config import FINAL_LOCATION_PARQUET_PATH, PROJECT_ROOT, EPA_RAWCSV_PATH, EPA_PARQUET_PATH
+from src.config import FINAL_LOCATION_PARQUET_PATH, PROJECT_ROOT, EPA_RAWCSV_PATH, EPA_PARQUET_PATH
 
-#OUTPUT_PATH = PROJECT_ROOT / EPA_PARQUET_PATH
+OUTPUT_PATH = PROJECT_ROOT / EPA_PARQUET_PATH
 
 def load_epa(epa_csv_path):  
     epa_df = pd.read_csv(epa_csv_path)
@@ -41,17 +41,17 @@ def merge_epa(df1, df2):
 
 if __name__ == '__main__':
 
-    #location_data = pd.read_parquet(FINAL_LOCATION_PARQUET_PATH)
-    location_data = pd.read_parquet("data/final/location_data.parquet")
+    location_data = pd.read_parquet(FINAL_LOCATION_PARQUET_PATH)
+    #location_data = pd.read_parquet("data/final/location_data.parquet")
 
-    epa_df = load_epa("data/raw/EPA_NY.csv")
-    #epa_df = load_epa(EPA_RAWCSV_PATH)
+    #epa_df = load_epa("data/raw/EPA_NY.csv")
+    epa_df = load_epa(EPA_RAWCSV_PATH)
     epa_process_df = process_epa(epa_df)
     epa_merge_df = merge_epa(location_data, epa_process_df)
 
-    epa_merge_df.to_parquet('data/interim/external/merged_with_loc/location_data_epa.parquet', index=False)
+    #epa_merge_df.to_parquet('data/interim/external/merged_with_loc/location_data_epa.parquet', index=False)
 
-    #OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
-    #epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
+    epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
 
     #socrata app token is missing
