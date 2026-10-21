@@ -175,7 +175,7 @@ if __name__ == '__main__':
     #compare feature representations
     comparison = compare_feature(X_train, y_train, groups, X_val, y_val)
     comparison.round(3).to_csv(OUTPUT / "feature_set_comparison.csv", index=False)
-    plot_feature_set_comparison(comparison, FIGURE_PATH / "feature_set_comparison.png")
+    plot_feature_set_comparison(comparison, FIGURE_PATH / "Feature Set Comparison.png")
 
     #find best representation , highest cross-validation scare on train 
     best_set = comparison.sort_values("cv R2 (log)", ascending=False).iloc[0]["feature_set"]
@@ -184,6 +184,8 @@ if __name__ == '__main__':
 
     #tune and evaluate 
     rows = []
+    val_predictions = {}
+
     for model_name, n_iter in [("random_forest", 10), ("gradient_boosting", 25)]:
         search = tune_model(model_name, best_kwargs, X_train, y_train, groups, n_iter)
         pipeline = search.best_estimator_
@@ -201,15 +203,18 @@ if __name__ == '__main__':
         #save pipeline 
         joblib.dump(pipeline, OUTPUT / f"{model_name}_tuned.joblib")
 
-        pred_val = pd.Series(pipeline.predict(X_val), index=y_val.index)
-        title = f"{model_name} validation"
-        plot_predicted_vs_actual(y_val, pred_val, title, FIGURE_PATH / f"{model_name}_val_predicted_vs_acutal.png")
-        plot_residuals(y_val, pred_val, title, FIGURE_PATH / f"{model_name}_val_residuals.png")
-        plot_error_by_group(val_df, y_val, pred_val, "region", f"{title}: error by region", FIGURE_PATH / f"{model_name}_val_error_by_region.png")
 
+        pred_val = pd.Series(pipeline.predict(X_val), index=y_val.index)
+        val_predictions[model_name] = pred_val
+        
         #find features that matter most 
         importance = feature_importance(pipeline, X_val, y_val)
         importance.rename("importance").to_csv(OUTPUT / f"{model_name}_importance.csv")
+    
+    plot_predicted_vs_actual(y_val, val_predictions, "Validation: predicted vs actual", FIGURE_PATH / "Val Predicted VS Actual.png")
+    plot_residuals(y_val, val_predictions, "Validation: residuals" , FIGURE_PATH / "Val Residuals.png")
+    plot_error_by_group(val_df, y_val, val_predictions, "region", "Validation: error by region", FIGURE_PATH / "Val Error By Region.png")
+    
 
     results = pd.DataFrame(rows)
     results.drop(columns="best settings").round(3).to_csv(OUTPUT / "tuned_results.csv", index=False)
@@ -224,35 +229,3 @@ if __name__ == '__main__':
 
 
         
-
-
-
-# results = 
-#     X_train_processed = preprocessor.fit_transform(X_train)
-#     X_val_processed = preprocessor.transform(X_val)
-
-#     rows = []
-#     OUTPUT.mkdir(parents=True, exist_ok=True)
-
-#     for name, model in get_models().items():
-#         model.fit(X_train_processed, y_train)
-#         joblib.dump(model, OUTPUT / f"{name}.joblib")
-
-#         importance = feature_importance(model, X_val_processed, y_train)
-
-#         print(f"Top 10 features {name}:")
-#         print(importance.head(10).round(3).to_string())
-
-#         rows.append({"model": name, "split": "train",
-#                     **check_model(model, X_train_processed, y_train)})
-
-#         rows.append({"model": name, "split": "validation",
-#                             **check_model(model, X_val_processed, y_train)})
-
-#         results = pd.DataFrame(rows).round(2)
-#         results.to_csv(OUTPUT / "validation_results_super.csv", index=False)
-
-#         print(results.to_string(index=False))
-    
-
-
