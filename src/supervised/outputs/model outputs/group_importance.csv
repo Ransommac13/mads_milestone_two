@@ -1,0 +1,13 @@
+model,group,features,R2 drop (mean),R2 drop(std)
+random_forest,Store types,3,0.4383,0.0142
+random_forest,Nearby Places,3,0.0169,0.0019
+random_forest,Traffic,1,0.0108,0.0029
+random_forest,Walkability / density,4,0.0279,0.0031
+random_forest,Census,10,0.0094,0.0029
+random_forest,Jobs,6,0.0093,0.0032
+gradient_boosting,Store types,3,0.4057,0.014
+gradient_boosting,Nearby Places,3,0.0215,0.0035
+gradient_boosting,Traffic,1,0.009,0.0019
+gradient_boosting,Walkability / density,4,0.0263,0.0023
+gradient_boosting,Census,10,0.0129,0.0041
+gradient_boosting,Jobs,6,0.0094,0.0031

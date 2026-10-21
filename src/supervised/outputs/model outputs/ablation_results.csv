@@ -1,0 +1,45 @@
+model,experiment,setting,features,cv R2 (log),cv R2 std,val R2 (log),val MAE ($)
+random_forest,full model,all feature,27,0.267,0.022,0.257,1371.624
+random_forest,drop one group,Store types,24,0.044,0.008,0.04,1541.302
+random_forest,drop one group,Nearby Places,24,0.263,0.022,0.252,1377.274
+random_forest,drop one group,Traffic,26,0.264,0.023,0.257,1372.033
+random_forest,drop one group,Walkability / density,23,0.267,0.023,0.255,1379.865
+random_forest,drop one group,Census,17,0.269,0.023,0.258,1365.288
+random_forest,drop one group,Jobs,21,0.265,0.023,0.251,1377.939
+random_forest,only one group,Store types,3,0.261,0.02,0.232,1393.912
+random_forest,only one group,Nearby Places,3,-0.006,0.011,-0.01,1575.507
+random_forest,only one group,Traffic,1,-0.101,0.009,-0.09,1625.133
+random_forest,only one group,Walkability / density,4,-0.0,0.006,0.001,1569.731
+random_forest,only one group,Census,10,0.007,0.009,0.006,1561.145
+random_forest,only one group,Jobs,6,0.0,0.005,0.004,1567.469
+random_forest,build up, + Store types,3,0.261,0.02,0.232,1393.912
+random_forest,build up, + Nearby Places,6,0.255,0.023,0.224,1394.862
+random_forest,build up, + Traffic,7,0.258,0.024,0.237,1383.627
+random_forest,build up, + Walkability / density,11,0.257,0.025,0.248,1370.408
+random_forest,build up, + Census,21,0.265,0.023,0.251,1377.939
+random_forest,build up, + Jobs,27,0.267,0.022,0.257,1371.624
+random_forest,drop one label,bustype,26,0.095,0.012,0.081,1512.605
+random_forest,drop one label,chain,26,0.253,0.02,0.24,1398.292
+random_forest,drop one label,region,26,0.261,0.024,0.247,1386.808
+gradient_boosting,full model,all feature,27,0.261,0.022,0.254,1379.557
+gradient_boosting,drop one group,Store types,24,0.033,0.01,0.035,1543.345
+gradient_boosting,drop one group,Nearby Places,24,0.257,0.021,0.251,1385.741
+gradient_boosting,drop one group,Traffic,26,0.259,0.019,0.251,1384.101
+gradient_boosting,drop one group,Walkability / density,23,0.26,0.022,0.25,1384.909
+gradient_boosting,drop one group,Census,17,0.256,0.02,0.256,1377.194
+gradient_boosting,drop one group,Jobs,21,0.259,0.024,0.25,1389.123
+gradient_boosting,only one group,Store types,3,0.261,0.021,0.232,1395.928
+gradient_boosting,only one group,Nearby Places,3,0.011,0.008,0.024,1555.937
+gradient_boosting,only one group,Traffic,1,-0.001,0.009,0.012,1555.706
+gradient_boosting,only one group,Walkability / density,4,0.005,0.009,0.015,1560.509
+gradient_boosting,only one group,Census,10,0.001,0.01,0.008,1559.502
+gradient_boosting,only one group,Jobs,6,0.002,0.006,0.006,1567.356
+gradient_boosting,build up, + Store types,3,0.261,0.021,0.232,1395.928
+gradient_boosting,build up, + Nearby Places,6,0.259,0.024,0.25,1386.509
+gradient_boosting,build up, + Traffic,7,0.259,0.024,0.252,1382.67
+gradient_boosting,build up, + Walkability / density,11,0.257,0.023,0.256,1378.137
+gradient_boosting,build up, + Census,21,0.259,0.024,0.25,1389.123
+gradient_boosting,build up, + Jobs,27,0.261,0.022,0.254,1379.557
+gradient_boosting,drop one label,bustype,26,0.085,0.011,0.077,1515.861
+gradient_boosting,drop one label,chain,26,0.247,0.018,0.244,1397.591
+gradient_boosting,drop one label,region,26,0.256,0.021,0.245,1390.445
