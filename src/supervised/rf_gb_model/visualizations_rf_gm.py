@@ -1,4 +1,5 @@
 import numpy as np 
+import pandas as pd
 import matplotlib 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt 
@@ -22,59 +23,74 @@ def plot_feature_set_comparison(comparison, path):
     plt.close()
 
 
-def plot_predicted_vs_actual(y_log, pred_log, title, path):
-    # predicted vs actual log sales 
+def plot_predicted_vs_actual(y_log, predictions, title, path):
+    # predicted vs actual log sales for random forest and gradient boosting
 
-    plt.figure(figsize=(6,6))
-    plt.hexbin(y_log, pred_log, gridsize=40, cmap="Blues", mincnt=1)
+    fig, axes = plt.subplots(1, len(predictions), figsize=(11, 5.5), sharex=True, sharey=True)
 
-    low, high = min(y_log.min(), pred_log.min()), max(y_log.max(), pred_log.max())
-    plt.plot([low, high], [low, high], color="red",
-             linestyle="--", label="perfect prediction")
+    # same axis range for every panel
+    low = min(y_log.min(), *[pred.min() for pred in predictions.values()])
+    high = max(y_log.max(), *[pred.max() for pred in predictions.values()])
 
-    plt.xlabel("Actual Log (avg daily sales)")
-    plt.ylabel("Predicted log (avg daily sales)")
-    plt.title(title)
-    plt.legend(loc="upper left")
-    plt.tight_layout()
-    plt.savefig(path, dpi=150)
-    plt.close()
+    for ax, (model_name, pred_log) in zip(axes, predictions.items()):
+        ax.hexbin(y_log, pred_log, gridsize=40, cmap="Blues", mincnt=1)
+        ax.plot([low, high], [low, high], color="red", linestyle="--", label="perfect prediction")
+        ax.set_title(model_name)
+        ax.set_xlabel("Actual Log (avg daily sales)")
+
+    axes[0].set_ylabel("Predicted log (avg daily sales)")
+    axes[0].legend(loc="upper left")
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
 
 
-def plot_residuals(y_log, pred_log, title, path):
+def plot_residuals(y_log, predictions, title, path):
 
-    residuals = y_log - pred_log
-    fig, axes = plt.subplots(1,2, figsize=(11,4))
+    fig, axes = plt.subplots(len(predictions), 2, figsize=(11, 4*len(predictions)), squeeze=False)
 
-    axes[0].scatter(pred_log, residuals, s=6, alpha=0.3)
-    axes[0].axhline(0, color="red", linestyle="--")
-    axes[0].set_xlabel("Predicted log(avg daily sales)")
-    axes[0].set_ylabel("Residual")
-    axes[0].set_title("Residuals vs predicted")
+    for row, (mode_name, pred_log) in zip(axes, predictions.items()):
+        
+        residuals = y_log - pred_log
 
-    # how errors are spread
-    axes[1].hist(residuals, bins=50)
-    axes[1].set_xlabel("Residual")
-    axes[1].set_ylabel("Retailers")
-    axes[1].set_title("Residuals Distribution")
+        row[0].scatter(pred_log, residuals, s=6, alpha=0.3)
+        row[0].axhline(0, color="red", linestyle="--")
+        row[0].set_xlabel("Predicted log(avg daily sales)")
+        row[0].set_ylabel(f"{mode_name}\nResidual")
+        row[0].set_title("Residuals vs predicted")
+
+        # how errors are spread
+        row[1].hist(residuals, bins=50)
+        row[1].set_xlabel("Residual")
+        row[1].set_ylabel("Retailers")
+        row[1].set_title("Residuals Distribution")
 
     fig.suptitle(title)
     plt.tight_layout()
     plt.savefig(path, dpi=150)
     plt.close()
 
-def plot_error_by_group(df, y_log, pred_log, cloumn, title, path, top=10):
+def plot_error_by_group(df, y_log, predictions, column, title, path, top=10):
 
-    #abs error of each retailer 
+    #abs error of each retailer
+    biggest = df[column].value_counts().head(top).index
 
-    errors = (y_log-pred_log).abs().groupby(df[cloumn].values)
-    summary = errors.agg(["mean", "size"])
-    summary = summary.sort_values("size", ascending =False).head(top).sort_values("mean")
+    table = pd.DataFrame({model_name:(y_log - pred_log).abs().groupby(df[column].values).mean()
+                          for model_name, pred_log in predictions.items()}).loc[biggest]
+    table = table.sort_values(table.columns[0])
+    table.index = table.index.astype(str)
+    table.plot.barh(figsize=(9,6))
+    
 
-    plt.figure(figsize=(8,5))
-    plt.barh(summary.index.astype(str), summary["mean"])
+    # errors = (y_log-pred_log).abs().groupby(df[column].values)
+    # summary = errors.agg(["mean", "size"])
+    # summary = summary.sort_values("size", ascending =False).head(top).sort_values("mean")
+
+    plt.ylabel("")
     plt.xlabel("Mean Absolute error (log sales)")
     plt.title(title)
+    plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=2)
     plt.tight_layout()
     plt.savefig(path, dpi=150)
     plt.close()
