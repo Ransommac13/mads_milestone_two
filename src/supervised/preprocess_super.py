@@ -91,9 +91,8 @@ def build_preprocessor(use_original=True, use_categorical=True, extra_columns=No
         transformers.append(("log_numeric", log_pipeline, LOG_FEATURES))
         transformers.append(("other_numeric_features", numeric_pipeline, NUMERIC_FEATURES))
 
-    #"CHANGE PASSTHROUGH TO NUMERICAL FEATURE"
     if extra_columns:
-        transformers.append(("extra features", "passthrough", extra_columns))
+        transformers.append(("extra features", numeric_pipeline, extra_columns))
 
     columns = ColumnTransformer(
         transformers,verbose_feature_names_out=False)
