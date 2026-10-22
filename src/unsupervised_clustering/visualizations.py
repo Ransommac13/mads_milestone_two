@@ -87,7 +87,7 @@ def pca_biplot(X_pca_train: pd.DataFrame, pca_model, feature_names, n_features=8
 
     return fig, ax
 
-def gmm_pca_plot(X_pca_train: pd.DataFrame, X_gmm_train: pd.DataFrame, explained_variance):
+def gmm_pca_plot(X_pca_train: pd.DataFrame, X_gmm_train: pd.DataFrame, explained_variance, n_clusters=5):
 
     pca_plot = X_pca_train[['agtno', 'PC1', 'PC2']]
     gmm_plot = X_gmm_train[['agtno', 'gmm_cluster', 'gmm_max_prob']]
@@ -96,7 +96,7 @@ def gmm_pca_plot(X_pca_train: pd.DataFrame, X_gmm_train: pd.DataFrame, explained
     assert len(plot_df) == len(X_pca_train)
     plot_df = plot_df.sort_values('gmm_max_prob')
 
-    palette = sns.color_palette('colorblind', 5)
+    palette = sns.color_palette('colorblind', n_clusters)
     # Assign color based on cluster.
     cluster_colors = np.array(palette)[plot_df["gmm_cluster"].to_numpy(dtype=int)]
     # Assign alpha based on membership confidence
@@ -112,7 +112,7 @@ def gmm_pca_plot(X_pca_train: pd.DataFrame, X_gmm_train: pd.DataFrame, explained
     ax.set_ylabel(f"PC2 ({explained_variance[1]:.1%} variance explained)")
 
     # Manual legend because the scatter uses per-point colors
-    handles = [Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=palette[k], markeredgecolor="none", markersize=7, label=f"Component {k}") for k in range(5)]
+    handles = [Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=palette[k], markeredgecolor="none", markersize=7, label=f"Component {k}") for k in range(n_clusters)]
 
     ax.legend(handles=handles, title="Dominant GMM component", frameon=False, bbox_to_anchor=(1.02, 1), loc="upper left")
     ax.set_ylim(top=10)
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     X_pca_train = pd.read_parquet(TRAIN_PCA_PARQUET_PATH)
     gmm_parquet_dir = Path(GMM_PARQUET_DIR)
-    X_gmm_train = pd.read_parquet(gmm_parquet_dir / "X_gmm_train.parquet")
+    X_gmm_train = pd.read_parquet(gmm_parquet_dir / "X_gmm_train_3PCs.parquet")
     pca = joblib.load("src/unsupervised_clustering/fitted_objects/pca.joblib")
     preprocessor = joblib.load("src/unsupervised_clustering/fitted_objects/preprocess.joblib")
 
@@ -134,5 +134,5 @@ if __name__ == '__main__':
     original_feature_names = [s.removeprefix("other_cols__") for s in original_feature_names]
     original_feature_names = ["log_" + s[20:] if s.startswith("log_transform_") else s for s in original_feature_names]
 
-    fig, ax = pca_biplot(X_pca_train, pca, original_feature_names, n_features=10, pc_x=1, pc_y=2)
+    fig, ax = gmm_pca_plot(X_pca_train, X_gmm_train, pca.explained_variance_ratio_, n_clusters=8)
     plt.show()

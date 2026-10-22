@@ -23,7 +23,7 @@ from src.config import GMM_PARQUET_DIR
 from src.unsupervised_clustering.preprocess import CLUSTERING_FEATURES
 from src.unsupervised_clustering.preprocess import wac_feature_eng, select_features, build_preprocessing_pipeline, main_pipepline
 from src.unsupervised_clustering.helper_functions import gmm_cluster_profile_heatmap, gmm_cluster_categorical_dist, gmm_cluster_numerical_dist
-from src.unsupervised_clustering.helper_functions import compare_gmm_profiles, compare_gmm_confidence
+from src.unsupervised_clustering.helper_functions import compare_gmm_profiles, compare_gmm_confidence, plot_kmeans_silhouette, plot_kmeans_pca_scatter
 
 def evaluate_kmeans(X, k_range=range(2,13)):
     results = []
@@ -227,7 +227,7 @@ def export_gmm_features(gmm, X_pca_train: pd.DataFrame, X_pca_val: pd.DataFrame,
         assert np.allclose(result[prob_cols].sum(axis=1), 1)
         assert result["agtno"].is_unique
 
-        filepath = output_dir / f"X_gmm_{split_name}.parquet"
+        filepath = output_dir / f"X_gmm_{split_name}_{num_pcs}PCs.parquet"
         result.to_parquet(filepath, index=False)
 
         outputs[split_name] = result
@@ -256,15 +256,44 @@ if __name__ == '__main__':
     train_pca5 = X_pca_train[[f"PC{i}" for i in range(1,6)]]
     val_pca5 = X_pca_val[[f"PC{i}" for i in range(1,6)]]
 
+    train_pca1 = X_pca_train[[f"PC{i}" for i in range(1,2)]]
+    train_pca2 = X_pca_train[[f"PC{i}" for i in range(1,3)]]
+    train_pca3 = X_pca_train[[f"PC{i}" for i in range(1,4)]]
+    train_pca4 = X_pca_train[[f"PC{i}" for i in range(1,5)]]
+    train_pca7 = X_pca_train[[f"PC{i}" for i in range(1,8)]]
+    train_pca10 = X_pca_train[[f"PC{i}" for i in range(1,11)]]
+
+    val_pca2 = X_pca_val[[f"PC{i}" for i in range(1,3)]]
+    val_pca3 = X_pca_val[[f"PC{i}" for i in range(1,4)]]
+    val_pca4 = X_pca_val[[f"PC{i}" for i in range(1,5)]]
+    
+    #kmeans_silhouette_dict = {
+    #    "Original Features": X_train_processed,
+    #    "1 PC": train_pca1,
+    #    "2 PCs": train_pca2,
+    #    "3 PCs": train_pca3,
+    #    "4 PCs": train_pca4,
+    #    "5 PCs": train_pca5,
+    #    "7 PCs": train_pca7,
+    #    "10 PCs": train_pca10
+    #}
+    #plot_kmeans_silhouette(representations=kmeans_silhouette_dict, k_range=range(2,13), sample_size=3000)
+    #plot_kmeans_pca_scatter(X_pca=X_pca_train, n_clusters=2, n_components=2, point_size=9, alpha=0.45)
+
     #results_gmm_original = evaluate_gmm(X_train_processed, X_val_processed).sort_values("bic")
     #results_gmm_five_pcs = evaluate_gmm(train_pca5, val_pca5).sort_values("bic")
-
+    #results_gmm_three_pcs = evaluate_gmm(train_pca3, val_pca3).sort_values("bic")
+    #results_gmm_two_pcs = evaluate_gmm(train_pca2, val_pca2).sort_values("bic")
+    #results_gmm_four_pcs = evaluate_gmm(train_pca4, val_pca4).sort_values("bic")
+    
     # Initial model shortlist: (train_pca5, 5), (train_pca5, 9), (train_pca5, 11), (train_pca7, 9), (train_pca7, 12), (X_train_processed, 11) 
-    #fit_results, ari_results, fitted_models = evaluate_gmm_initialization_stability(train_pca5, n_components=5, seeds=range(25), covariance_type='full', n_init=30)
-    #compare_to_best_results = compare_to_best_gmm(fit_results=fit_results, fitted_models=fitted_models, X_train=train_pca5)
+    #fit_results, ari_results, fitted_models = evaluate_gmm_initialization_stability(train_pca3, n_components=7, seeds=range(25), covariance_type='full', n_init=30)
 
-    # After evaluating for stability: (train_pca5, 5, n_init=30, random_state=4)
-    gmm_primary, assignments_primary = fit_single_gmm(train_pca5, 5, pca_train_agtno, covariance_type='full', n_init=30, random_state=4)
+    # After evaluating for stability: (train_pca5, 5, n_init=30, random_state=4), (train_pca2, 6, n_init=30, random_state=16), (train_pca3, 8, n_init=30, random_state=10)
+    #gmm_5_5, assignments_5_5 = fit_single_gmm(train_pca5, 5, pca_train_agtno, covariance_type='full', n_init=30, random_state=4)
+    #gmm_2_6, assignments_2_6 = fit_single_gmm(train_pca2, n_components=6, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=16)
+    gmm_3_8, assignments_3_8 = fit_single_gmm(train_pca3, n_components=8, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=10)
+    #gmm_3_7, assignments_3_7 = fit_single_gmm(train_pca3, n_components=7, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=21)
     
     # Evaluate component profiles using preimputed data.
     preprocessor = joblib.load("src/unsupervised_clustering/fitted_objects/preprocess.joblib")
@@ -275,14 +304,21 @@ if __name__ == '__main__':
 
     train_pca5_profile = X_pca_train_w_agtno[[f"PC{i}" for i in range(1,6)] + ['agtno']]
     val_pca5_profile = X_pca_val_w_agtno[[f"PC{i}" for i in range(1,6)] + ['agtno']]
+    train_pca2_profile = X_pca_train_w_agtno[[f"PC{i}" for i in range(1,3)] + ['agtno']]
+    val_pca2_profile = X_pca_val_w_agtno[[f"PC{i}" for i in range(1,3)] + ['agtno']]
+    train_pca3_profile = X_pca_train_w_agtno[[f"PC{i}" for i in range(1,4)] + ['agtno']]
+    val_pca3_profile = X_pca_val_w_agtno[[f"PC{i}" for i in range(1,4)] + ['agtno']]
 
-    #train_profiles, val_profiles, profile_diffs = compare_gmm_profiles(gmm_primary, train_pca5_profile, val_pca5_profile,
+    #standardized_feature_medians = gmm_cluster_profile_heatmap(assignments=assignments_3_8, train_df=train_profile_trimmed)
+    #train_profiles, val_profiles, profile_diffs = compare_gmm_profiles(gmm_3_8, train_pca3_profile, val_pca3_profile,
     #                                                                   train_profile_trimmed, val_profile_trimmed)
 
-    #overall_df, by_cluster_df, confidence_df = compare_gmm_confidence(gmm_primary, train_pca5, val_pca5)
+    #prevalence = compare_gmm_prevalence(gmm_3_8, train_pca3, val_pca3)
+    #overall_df, by_cluster_df, confidence_df = compare_gmm_confidence(gmm_3_8, train_pca3, val_pca3)
+    #print("3 PCS, 8 CLUSTERS")
+    #print(prevalence)
+    #print(overall_df, by_cluster_df)
 
-    gmm_cluster_profile_heatmap(assignments=assignments_primary, train_df=train_profile_trimmed)
-
-    #final_gmm_feature_dfs = export_gmm_features(gmm_primary, X_pca_train_w_agtno, X_pca_val_w_agtno, X_pca_test_w_agtno,
-    #                                            output_dir=GMM_PARQUET_DIR, num_pcs=5)
-    #joblib.dump(gmm_primary, "src/unsupervised_clustering/fitted_objects/gmm.joblib")
+    #final_gmm_feature_dfs = export_gmm_features(gmm_3_8, X_pca_train_w_agtno, X_pca_val_w_agtno, X_pca_test_w_agtno,
+    #                                            output_dir=GMM_PARQUET_DIR, num_pcs=3)
+    #joblib.dump(gmm_3_8, "src/unsupervised_clustering/fitted_objects/gmm_3_8.joblib")

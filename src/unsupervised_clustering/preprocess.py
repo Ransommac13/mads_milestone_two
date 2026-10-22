@@ -187,5 +187,5 @@ if __name__ == "__main__":
 
     #scree_plot(pca)
     
-    #pc_loadings = pd.DataFrame(pca.components_.T, index=feature_names, columns=[f"PC{i+1}" for i in range(pca.n_components_)])
-    #pc_loading_heatmap(pc_loadings)
+    pc_loadings = pd.DataFrame(pca.components_.T, index=feature_names, columns=[f"PC{i+1}" for i in range(pca.n_components_)])
+    pc_loading_heatmap(pc_loadings, n_components=5)

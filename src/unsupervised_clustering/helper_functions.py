@@ -13,6 +13,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+from src.config import RANDOM_SEED
+
 
 CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'total_population', 'age_18_29_proportion', 'poverty_rate',
@@ -394,3 +399,141 @@ def compare_gmm_confidence(gmm, X_train: pd.DataFrame, X_val: pd.DataFrame):
     plt.show()
 
     return overall_df, by_cluster, confidence_df
+
+def plot_kmeans_silhouette(representations, k_range=range(2, 13), sample_size=3000):
+    """
+    Compare K-means silhouette scores across feature representations.
+
+    Parameters
+    representations : Dictionary mapping representation names to feature matrices. Example: {"5 PCs": train_pca5, "7 PCs": train_pca7, "10 PCs": train_pca10}
+
+    k_range : Numbers of clusters to evaluate.
+
+    sample_size : Number of observations sampled for silhouette calculation. Set to None for exact scores, with considerable computational cost.
+
+    Returns DataFrame of silhouette scores for each representation and k.
+    """
+
+    results = []
+
+    for name, X in representations.items():
+
+        X = np.asarray(X)
+        for k in k_range:
+            model = KMeans(n_clusters=k, random_state=RANDOM_SEED, n_init=10)
+            labels = model.fit_predict(X)
+            n_sample = (min(sample_size, len(X)) if sample_size is not None else None)
+
+            score = silhouette_score(X, labels, sample_size=n_sample, random_state=RANDOM_SEED)
+
+            results.append({
+                "representation": name,
+                "k": k,
+                "silhouette_score": score
+            })
+
+    results_df = pd.DataFrame(results)
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+
+    sns.lineplot(
+        data=results_df,
+        x="k",
+        y="silhouette_score",
+        hue="representation",
+        marker="o",
+        linewidth=2,
+        markersize=6,
+        ax=ax
+    )
+
+    ax.set_title("K-means Silhouette Scores by Feature Representation", fontsize=13, pad=15)
+
+    ax.set_xlabel("Number of Clusters (k)", fontsize=11)
+    ax.set_ylabel("Mean Silhouette Score", fontsize=11)
+
+    ax.set_xticks(list(k_range))
+
+    ax.grid(alpha=0.2)
+    ax.spines[["top", "right"]].set_visible(False)
+
+    ax.legend(title="Feature Representation", frameon=False)
+
+    plt.tight_layout()
+    plt.show()
+
+    return results_df
+
+def plot_kmeans_pca_scatter(X_pca, n_clusters=2, n_components=5, point_size=9, alpha=0.45):
+    """
+    Fit K-means using the selected number of PCs and plot cluster membership in the PC1-PC2 plane.
+
+    Parameters
+    X_pca : PCA-transformed observations.
+    n_clusters : Number of K-means clusters.
+    n_components : Number of PCs used to FIT K-means. Only PC1 and PC2 are displayed.
+    point_size : Scatterplot marker size.
+    alpha : Marker transparency.
+
+    Returns
+    model : Fitted K-means model.
+    labels : Cluster assignments.
+    """
+
+    X_pca = np.asarray(X_pca)
+    X_model = X_pca[:, :n_components]
+    model = KMeans(n_clusters=n_clusters, random_state=RANDOM_SEED, n_init=10)
+
+    labels = model.fit_predict(X_model)
+
+    # Consistent categorical colors
+    palette = sns.color_palette("tab10", n_colors=n_clusters)
+    colors = np.array(palette)[labels]
+
+    fig, ax = plt.subplots(figsize=(9,7))
+
+    # Draw all observations in one scatter call
+    ax.scatter(
+        X_pca[:, 0],
+        X_pca[:, 1],
+        c=colors,
+        s=point_size,
+        alpha=alpha,
+        linewidths=0,
+        rasterized=True
+    )
+
+    # Project fitted centroids onto PC1-PC2
+    centers = model.cluster_centers_[:, :2]
+
+    ax.scatter(
+        centers[:, 0],
+        centers[:, 1],
+        marker="X",
+        s=180,
+        c="black",
+        edgecolors="white",
+        linewidths=1,
+        zorder=5,
+        label="Centroids"
+    )
+
+    # Legend handles
+    from matplotlib.lines import Line2D
+
+    handles = [Line2D([0], [0], marker="o", linestyle="", markerfacecolor=palette[i], markeredgecolor="none", markersize=7, label=f"Cluster {i}") for i in range(n_clusters)]
+    handles.append(Line2D([0], [0], marker="X", linestyle="", color="black", markersize=9, label="Centroids"))
+
+    ax.legend(handles=handles, title="K-means Membership", frameon=False, loc="best")
+    ax.set_title(f"K-means Clusters in PCA Space (k={n_clusters})", fontsize=13, pad=15)
+    ax.set_xlabel("Principal Component 1", fontsize=11)
+    ax.set_ylabel("Principal Component 2", fontsize=11)
+
+    ax.grid(alpha=0.15)
+    ax.spines[["top", "right"]].set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+
+    return model, labels
