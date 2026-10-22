@@ -17,7 +17,7 @@ CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'family_households_proportion', 'no_vehicle_households_proportion',
        'D1C', 'D3A', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000',
        'wac_ce01_prop', 'consumer_facing_jobs_proportion',
-       'industrial_and_log_jobs_proportion']
+       'industrial_and_log_jobs_proportion', 'aadt_count']
 
 def inspect_skewness(imputed_df: pd.DataFrame):
 

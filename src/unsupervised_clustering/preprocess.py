@@ -145,6 +145,8 @@ if __name__ == "__main__":
     train_df = pd.read_parquet(TRAIN_DATA_PARQUET_PATH)
     val_df = pd.read_parquet(VALIDATION_DATA_PARQUET_PATH)
     test_df = pd.read_parquet(TEST_DATA_PARQUET_PATH)
+
+    print(train_df.shape, train_df.columns)
     
     preprocessor, X_train_processed = main_pipepline(train_df)
     X_val_processed = preprocessor.transform(val_df)
@@ -157,6 +159,8 @@ if __name__ == "__main__":
     X_train_processed_df = pd.DataFrame(X_train_processed, columns=new_column_names, index=train_df.index)
     X_val_processed_df = pd.DataFrame(X_val_processed, columns=new_column_names, index=val_df.index)
     X_test_processed_df = pd.DataFrame(X_test_processed, columns=new_column_names, index=test_df.index)
+
+    print(X_train_processed_df.shape, X_train_processed_df.columns)
 
     #X_train_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
     #X_val_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
