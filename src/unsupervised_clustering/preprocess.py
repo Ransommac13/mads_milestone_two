@@ -26,7 +26,7 @@ CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'family_households_proportion', 'no_vehicle_households_proportion',
        'D1C', 'D3A', 'NatWalkInd', 'commercial_places_within_1_mi', 'rac_c000',
        'wac_ce01_prop', 'consumer_facing_jobs_proportion',
-       'industrial_and_log_jobs_proportion']
+       'industrial_and_log_jobs_proportion', 'aadt_count']
 
 def wac_feature_eng(clustering_df: pd.DataFrame) -> pd.DataFrame:
 
@@ -53,17 +53,17 @@ def wac_feature_eng(clustering_df: pd.DataFrame) -> pd.DataFrame:
 def select_features(clustering_df: pd.DataFrame):
 
     #competition_vars = ['competitors_within_1_mi']
-        #employment_vars = ['labor_force_participation_rate', 'unemployment_rate', 'D1C',
-        #                   'rac_c000', 'rac_ce01_prop', 'rac_ce02_prop',
-        #                   'consumer_facing_jobs_proportion', 'office_jobs_proportion',
-        #                   'industrial_and_log_jobs_proportion', 'supporting_services_proportion',
-        #                   'wac_c000', 'wac_ce01_prop', 'wac_ce02_prop']
-        #activity_vars = ['commercial_places_within_1_mi', 'community_places_within_1_mi']
-        #traffic_vars = ['aadt_count', 'aadt_lanes']
-        #accessibility_vars = ['dist_to_read_m', 'NatWalkInd', 'D3A']
-        #sociodemographic_vars = ['median_household_income', 'total_population', 'age_18_29_proportion', 'age_30_64_proportion',
-        #                         'poverty_rate', 'bachelors_degree_proportion_25plus', 'post_grad_degree_proportion_25plus',
-        #                         'owner_occupied_proportion', 'family_households_proportion', 'no_vehicle_households_proportion', 'D1B']
+    #employment_vars = ['labor_force_participation_rate', 'unemployment_rate', 'D1C',
+    #                   'rac_c000', 'rac_ce01_prop', 'rac_ce02_prop',
+    #                   'consumer_facing_jobs_proportion', 'office_jobs_proportion',
+    #                   'industrial_and_log_jobs_proportion', 'supporting_services_proportion',
+    #                   'wac_c000', 'wac_ce01_prop', 'wac_ce02_prop']
+    #activity_vars = ['commercial_places_within_1_mi', 'community_places_within_1_mi']
+    #traffic_vars = ['aadt_count', 'aadt_lanes']
+    #accessibility_vars = ['dist_to_read_m', 'NatWalkInd', 'D3A']
+    #sociodemographic_vars = ['median_household_income', 'total_population', 'age_18_29_proportion', 'age_30_64_proportion',
+    #                         'poverty_rate', 'bachelors_degree_proportion_25plus', 'post_grad_degree_proportion_25plus',
+    #                         'owner_occupied_proportion', 'family_households_proportion', 'no_vehicle_households_proportion', 'D1B']
 
     return clustering_df[CLUSTERING_FEATURES].copy()
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     preprocessor, X_train_processed = main_pipepline(train_df)
     X_val_processed = preprocessor.transform(val_df)
     X_test_processed = preprocessor.transform(test_df)
-    #joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
+    joblib.dump(preprocessor, "src/unsupervised_clustering/preprocess.joblib")
 
     column_names = preprocessor.named_steps['numeric_preprocessing'].get_feature_names_out()
     new_column_names = np.array(["log1p" + col[19:] if col.startswith("log_transform_cols") else col for col in column_names])
@@ -158,30 +158,30 @@ if __name__ == "__main__":
     X_val_processed_df = pd.DataFrame(X_val_processed, columns=new_column_names, index=val_df.index)
     X_test_processed_df = pd.DataFrame(X_test_processed, columns=new_column_names, index=test_df.index)
 
-    #X_train_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
-    #X_val_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
-    #X_test_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_test_processed.parquet")
+    X_train_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_train_processed.parquet")
+    X_val_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_val_processed.parquet")
+    X_test_processed_df.to_parquet("src/unsupervised_clustering/eda_data/X_test_processed.parquet")
 
-    #print("Preprocessed datasets written to parquet!")
-    #print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
+    print("Preprocessed datasets written to parquet!")
+    print(f"Train shape: {X_train_processed_df.shape}. Val shape: {X_val_processed.shape}. Test shape: {X_test_processed.shape}")
 
     pca, X_train_pca, feature_names = fit_PCA(X_train_processed_df, train_df["agtno"])
     X_val_pca = transform_PCA(pca, X_val_processed_df, val_df["agtno"])
     X_test_pca = transform_PCA(pca, X_test_processed_df, test_df["agtno"])
-    #joblib.dump(pca, "src/unsupervised_clustering/fitted_objects/pca.joblib")
+    joblib.dump(pca, "src/unsupervised_clustering/fitted_objects/pca.joblib")
 
-    #X_pca_train_path = Path(TRAIN_PCA_PARQUET_PATH)
-    #X_pca_val_path = Path(VAL_PCA_PARQUET_PATH)
-    #X_pca_test_path = Path(TEST_PCA_PARQUET_PATH)
-    #X_pca_train_path.parent.mkdir(parents=True, exist_ok=True)
-    #X_train_pca.to_parquet(str(X_pca_train_path), index=False, engine="pyarrow")
-    #X_val_pca.to_parquet(str(X_pca_val_path), index=False, engine="pyarrow")
-    #X_test_pca.to_parquet(str(X_pca_test_path), index=False, engine="pyarrow")
+    X_pca_train_path = Path(TRAIN_PCA_PARQUET_PATH)
+    X_pca_val_path = Path(VAL_PCA_PARQUET_PATH)
+    X_pca_test_path = Path(TEST_PCA_PARQUET_PATH)
+    X_pca_train_path.parent.mkdir(parents=True, exist_ok=True)
+    X_train_pca.to_parquet(str(X_pca_train_path), index=False, engine="pyarrow")
+    X_val_pca.to_parquet(str(X_pca_val_path), index=False, engine="pyarrow")
+    X_test_pca.to_parquet(str(X_pca_test_path), index=False, engine="pyarrow")
 
-    #print("PCs written to parquet!")
-    #print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
+    print("PCs written to parquet!")
+    print(f"Train PCs shape: {X_train_pca.shape}. Val PCs shape: {X_val_pca.shape}. Test PCs shape: {X_test_pca.shape}")
 
-    #scree_plot(pca)
+    scree_plot(pca)
     
-    #pc_loadings = pd.DataFrame(pca.components_.T, index=feature_names, columns=[f"PC{i+1}" for i in range(pca.n_components_)])
-    #pc_loading_heatmap(pc_loadings)
+    pc_loadings = pd.DataFrame(pca.components_.T, index=feature_names, columns=[f"PC{i+1}" for i in range(pca.n_components_)])
+    pc_loading_heatmap(pc_loadings)
