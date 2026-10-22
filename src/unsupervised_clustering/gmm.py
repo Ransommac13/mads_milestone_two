@@ -261,6 +261,7 @@ if __name__ == '__main__':
 
     # Initial model shortlist: (train_pca5, 5), (train_pca5, 9), (train_pca5, 11), (train_pca7, 9), (train_pca7, 12), (X_train_processed, 11) 
     #fit_results, ari_results, fitted_models = evaluate_gmm_initialization_stability(train_pca5, n_components=5, seeds=range(25), covariance_type='full', n_init=30)
+    #compare_to_best_results = compare_to_best_gmm(fit_results=fit_results, fitted_models=fitted_models, X_train=train_pca5)
 
     # After evaluating for stability: (train_pca5, 5, n_init=30, random_state=4)
     gmm_primary, assignments_primary = fit_single_gmm(train_pca5, 5, pca_train_agtno, covariance_type='full', n_init=30, random_state=4)
