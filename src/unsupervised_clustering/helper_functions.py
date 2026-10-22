@@ -5,11 +5,14 @@ feature_set.py
 This module defines the feature set by which we want to define a lottery retailer's potential "archetype."
 """
 
+import textwrap
+import re
+import math
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import math
 
 CLUSTERING_FEATURES = ['competitors_within_1_mi', 'median_household_income',
        'total_population', 'age_18_29_proportion', 'poverty_rate',
@@ -78,10 +81,26 @@ def scree_plot(pca):
 
 def pc_loading_heatmap(pc_loadings: pd.DataFrame, n_components=9):
 
+    def format_label(label):
+        label = str(label)
+
+        # 1. Remove leading log1p indicators
+        label = re.sub(r"^(?:log1p[_\s]*|log1p__)", "", label, flags=re.I)
+        # 2. Replace proportion with prop
+        label = label.replace("proportion", "prop")
+        # 3. Replace underscores with spaces and wrap long labels
+        label = label.replace("_", " ")
+        if len(label) > 20:
+            label = textwrap.fill(label, width=20)
+        return label
+
+    # Apply formatting without modifying original DataFrame
+    plot_data = pc_loadings.iloc[:, :n_components].copy()
+    plot_data.index = [format_label(col) for col in plot_data.index]
     plt.figure(figsize=(12, 9))
 
     sns.heatmap(
-        pc_loadings.iloc[:, :n_components],
+        plot_data,
         cmap="coolwarm",
         center=0,
         annot=True,
@@ -89,8 +108,25 @@ def pc_loading_heatmap(pc_loadings: pd.DataFrame, n_components=9):
     )
 
     plt.title("PCA Component Coefficients")
+    plt.yticks(rotation=0)
     plt.tight_layout()
     plt.show()
+
+#def pc_loading_heatmap(pc_loadings: pd.DataFrame, n_components=9):
+
+    #plt.figure(figsize=(12, 9))
+
+    #sns.heatmap(
+    #    pc_loadings.iloc[:, :n_components],
+    #    cmap="coolwarm",
+    #    center=0,
+    #    annot=True,
+    #    fmt=".2f"
+    #)
+
+    #plt.title("PCA Component Coefficients")
+    #plt.tight_layout()
+    #plt.show()
 
 def pc_v_pc_scatterplot(X_pca, train_df: pd.DataFrame, pc_x=1, pc_y=2, color_by=None, kind='scatter', agg_func=np.median):
 
