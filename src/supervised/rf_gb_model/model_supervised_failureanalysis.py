@@ -241,7 +241,7 @@ def random_forest_failure_analysis(
         ascending=False
     )
 
-    return failures.head(n_examples)
+    return failures
 
 if __name__ == '__main__':
 
@@ -305,26 +305,9 @@ if __name__ == '__main__':
                 n_examples=10
             )
 
-            rf_failures.to_csv(
-                OUTPUT / "random_forest_failures.csv",
-                index=True,
-                index_label="record_index"
-            )
+            rf_failures.to_csv(OUTPUT / "random_forest_failures.csv",index=True,index_label="record_index")
+            rf_failures.to_csv("/Users/brisabol/Documents/MADS/SIADS 696/random_forest_failures.csv",index=True,index_label="record_index")
 
-            columns_to_show = [
-                column for column in [
-                    "actual_sales",
-                    "predicted_sales",
-                    "residual_dollars",
-                    "absolute_error_dollars",
-                    "absolute_error_log",
-                    "error_direction",
-                    "sales_category",
-                    "region",
-                    "tract_geoid"
-                ]
-                if column in rf_failures.columns
-            ]
     
     plot_predicted_vs_actual(y_val, val_predictions, "Validation: predicted vs actual", FIGURE_PATH / "Val Predicted VS Actual.png")
     plot_residuals(y_val, val_predictions, "Validation: residuals" , FIGURE_PATH / "Val Residuals.png")
