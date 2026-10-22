@@ -158,6 +158,90 @@ def feature_importance(pipeline, X, y_log):
 
     return pd.Series(result.importances_mean, index=columns).sort_values(ascending = False)
 
+def random_forest_failure_analysis(
+    pipeline,
+    X_val,
+    y_val,
+    val_df,
+    n_examples=10
+):
+    """
+    Find the random forest's largest validation errors.
+
+    The model predicts log1p(sales), so this reports errors on both
+    the log scale and the original dollar scale.
+    """
+
+    # Predictions on the log1p scale
+    pred_log = pd.Series(
+        pipeline.predict(X_val),
+        index=X_val.index
+    )
+
+    # Align actual values with X_val
+    actual_log = pd.Series(
+        np.asarray(y_val),
+        index=X_val.index
+    )
+
+    # Convert predictions and actual values back to dollars
+    predicted_sales = np.expm1(pred_log)
+    actual_sales = np.expm1(actual_log)
+
+    # Keep original validation-record information
+    failures = val_df.reindex(X_val.index).copy()
+
+    failures["actual_log_sales"] = actual_log
+    failures["predicted_log_sales"] = pred_log
+
+    failures["actual_sales"] = actual_sales
+    failures["predicted_sales"] = predicted_sales
+
+    # Actual minus predicted:
+    # positive = underprediction; negative = overprediction
+    failures["residual_log"] = actual_log - pred_log
+    failures["residual_dollars"] = actual_sales - predicted_sales
+
+    failures["absolute_error_log"] = failures["residual_log"].abs()
+    failures["absolute_error_dollars"] = (
+        failures["residual_dollars"].abs()
+    )
+
+    failures["error_direction"] = np.select(
+        [
+            failures["residual_dollars"] > 0,
+            failures["residual_dollars"] < 0
+        ],
+        [
+            "underprediction",
+            "overprediction"
+        ],
+        default="exact"
+    )
+
+    # Flag unusually high/low actual sales
+    low_sales_cutoff = actual_log.quantile(0.05)
+    high_sales_cutoff = actual_log.quantile(0.95)
+
+    failures["sales_category"] = np.select(
+        [
+            actual_log <= low_sales_cutoff,
+            actual_log >= high_sales_cutoff
+        ],
+        [
+            "unusually low sales",
+            "unusually high sales"
+        ],
+        default="typical sales range"
+    )
+
+    # Largest log-scale errors first
+    failures = failures.sort_values(
+        "absolute_error_log",
+        ascending=False
+    )
+
+    return failures.head(n_examples)
 
 if __name__ == '__main__':
 
@@ -210,6 +294,37 @@ if __name__ == '__main__':
         #find features that matter most 
         importance = feature_importance(pipeline, X_val, y_val)
         importance.rename("importance").to_csv(OUTPUT / f"{model_name}_importance.csv")
+
+        # Failure analysis only for the random forest
+        if model_name == "random_forest":
+            rf_failures = random_forest_failure_analysis(
+                pipeline=pipeline,
+                X_val=X_val,
+                y_val=y_val,
+                val_df=val_df,
+                n_examples=10
+            )
+
+            rf_failures.to_csv(
+                OUTPUT / "random_forest_failures.csv",
+                index=True,
+                index_label="record_index"
+            )
+
+            columns_to_show = [
+                column for column in [
+                    "actual_sales",
+                    "predicted_sales",
+                    "residual_dollars",
+                    "absolute_error_dollars",
+                    "absolute_error_log",
+                    "error_direction",
+                    "sales_category",
+                    "region",
+                    "tract_geoid"
+                ]
+                if column in rf_failures.columns
+            ]
     
     plot_predicted_vs_actual(y_val, val_predictions, "Validation: predicted vs actual", FIGURE_PATH / "Val Predicted VS Actual.png")
     plot_residuals(y_val, val_predictions, "Validation: residuals" , FIGURE_PATH / "Val Residuals.png")
