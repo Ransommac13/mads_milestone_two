@@ -12,9 +12,11 @@ import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 from src.config import RANDOM_SEED
 
@@ -465,7 +467,7 @@ def plot_kmeans_silhouette(representations, k_range=range(2, 13), sample_size=30
 
     return results_df
 
-def plot_kmeans_pca_scatter(X_pca, n_clusters=2, n_components=5, point_size=9, alpha=0.45):
+def plot_kmeans_pca_scatter(X_pca, n_clusters=2, n_components=5, point_size=9, alpha=0.45, show_lowess=True, lowess_frac=0.3):
     """
     Fit K-means using the selected number of PCs and plot cluster membership in the PC1-PC2 plane.
 
@@ -481,6 +483,7 @@ def plot_kmeans_pca_scatter(X_pca, n_clusters=2, n_components=5, point_size=9, a
     labels : Cluster assignments.
     """
 
+    X_pca_df = X_pca.copy()
     X_pca = np.asarray(X_pca)
     X_model = X_pca[:, :n_components]
     model = KMeans(n_clusters=n_clusters, random_state=RANDOM_SEED, n_init=10)
@@ -491,41 +494,28 @@ def plot_kmeans_pca_scatter(X_pca, n_clusters=2, n_components=5, point_size=9, a
     palette = sns.color_palette("tab10", n_colors=n_clusters)
     colors = np.array(palette)[labels]
 
-    fig, ax = plt.subplots(figsize=(9,7))
+    fig, ax = plt.subplots(figsize=(8,5.5))
 
-    # Draw all observations in one scatter call
-    ax.scatter(
-        X_pca[:, 0],
-        X_pca[:, 1],
-        c=colors,
-        s=point_size,
-        alpha=alpha,
-        linewidths=0,
-        rasterized=True
-    )
+    # Scatter plot
+    ax.scatter(X_pca[:, 0], X_pca[:, 1], c=colors, s=point_size, alpha=alpha, linewidths=0, rasterized=True)
 
-    # Project fitted centroids onto PC1-PC2
+    if show_lowess:
+            smoothed = lowess(endog=X_pca_df["PC2"], exog=X_pca_df["PC1"], frac=lowess_frac, return_sorted=True)
+            ax.plot(smoothed[:, 0], smoothed[:, 1], color="black", linewidth=2.2, alpha=0.85, linestyle="--", zorder=5)
+
+    # Project fitted centroids onto scatter plot.
     centers = model.cluster_centers_[:, :2]
 
-    ax.scatter(
-        centers[:, 0],
-        centers[:, 1],
-        marker="X",
-        s=180,
-        c="black",
-        edgecolors="white",
-        linewidths=1,
-        zorder=5,
-        label="Centroids"
-    )
+    ax.scatter(centers[:, 0], centers[:, 1], marker="X", s=180, c="black", edgecolors="white", linewidths=1, zorder=5, label="Centroids")
 
     # Legend handles
-    from matplotlib.lines import Line2D
-
     handles = [Line2D([0], [0], marker="o", linestyle="", markerfacecolor=palette[i], markeredgecolor="none", markersize=7, label=f"Cluster {i}") for i in range(n_clusters)]
     handles.append(Line2D([0], [0], marker="X", linestyle="", color="black", markersize=9, label="Centroids"))
+    if show_lowess:
+            handles.append(Line2D([0], [0], color="black", linewidth=2.2, linestyle="--", label="LOWESS trend"))
 
     ax.legend(handles=handles, title="K-means Membership", frameon=False, loc="best")
+    ax.set_ylim(top=10)
     ax.set_title(f"K-means Clusters in PCA Space (k={n_clusters})", fontsize=13, pad=15)
     ax.set_xlabel("Principal Component 1", fontsize=11)
     ax.set_ylabel("Principal Component 2", fontsize=11)

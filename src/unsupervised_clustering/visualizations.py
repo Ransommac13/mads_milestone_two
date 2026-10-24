@@ -105,7 +105,7 @@ def gmm_pca_plot(X_pca_train: pd.DataFrame, X_gmm_train: pd.DataFrame, explained
     # Combine RGB and alpha into RGBA array
     colors = np.column_stack([cluster_colors, alpha])
 
-    fig, ax = plt.subplots(figsize=(8, 5.5))
+    fig, ax = plt.subplots(figsize=(10, 5.5))
 
     ax.scatter(plot_df["PC1"], plot_df["PC2"], s=10, c=colors, edgecolors="none", rasterized=True)
 
@@ -189,5 +189,5 @@ if __name__ == '__main__':
     original_feature_names = [s.removeprefix("other_cols__") for s in original_feature_names]
     original_feature_names = ["log_" + s[20:] if s.startswith("log_transform_") else s for s in original_feature_names]
 
-    fig, ax = gmm_pca_plot(X_pca_train, X_gmm_train_3_8, pca.explained_variance_ratio_, n_clusters=8, show_lowess=True, lowess_frac=0.5)
+    fig, ax = gmm_pca_plot(X_pca_train, X_gmm_train_3_8, pca.explained_variance_ratio_, n_clusters=8, show_lowess=False, lowess_frac=0.5)
     plt.show()

@@ -278,7 +278,7 @@ if __name__ == '__main__':
     #    "10 PCs": train_pca10
     #}
     #plot_kmeans_silhouette(representations=kmeans_silhouette_dict, k_range=range(2,13), sample_size=3000)
-    #plot_kmeans_pca_scatter(X_pca=X_pca_train, n_clusters=2, n_components=2, point_size=9, alpha=0.45)
+    plot_kmeans_pca_scatter(X_pca=X_pca_train, n_clusters=2, n_components=3, point_size=9, alpha=0.45, show_lowess=True, lowess_frac=0.3)
 
     #results_gmm_original = evaluate_gmm(X_train_processed, X_val_processed).sort_values("bic")
     #results_gmm_five_pcs = evaluate_gmm(train_pca5, val_pca5).sort_values("bic")
@@ -292,7 +292,7 @@ if __name__ == '__main__':
     # After evaluating for stability: (train_pca5, 5, n_init=30, random_state=4), (train_pca2, 6, n_init=30, random_state=16), (train_pca3, 8, n_init=30, random_state=10)
     #gmm_5_5, assignments_5_5 = fit_single_gmm(train_pca5, 5, pca_train_agtno, covariance_type='full', n_init=30, random_state=4)
     #gmm_2_6, assignments_2_6 = fit_single_gmm(train_pca2, n_components=6, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=16)
-    gmm_3_8, assignments_3_8 = fit_single_gmm(train_pca3, n_components=8, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=10)
+    #gmm_3_8, assignments_3_8 = fit_single_gmm(train_pca3, n_components=8, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=10)
     #gmm_3_7, assignments_3_7 = fit_single_gmm(train_pca3, n_components=7, agtno=pca_train_agtno, covariance_type='full', n_init=30, random_state=21)
     
     # Evaluate component profiles using preimputed data.
