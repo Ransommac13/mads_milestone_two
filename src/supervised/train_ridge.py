@@ -16,7 +16,7 @@ from sklearn.model_selection import KFold, cross_validate
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, GMM_PARQUET_DIR
+from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH, TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, TEST_PCA_PARQUET_PATH, GMM_PARQUET_DIR
 from src.supervised.preprocess_super import build_preprocessor
 
 TARGET = 'avg_daily_sales'
@@ -47,7 +47,52 @@ def load_data():
     gmm_pca_train7 = pca_train7.merge(gmm_train, on='agtno', how='inner', validate='one_to_one')
     gmm_pca_val7 = pca_val7.merge(gmm_val, on='agtno', how='inner', validate='one_to_one')
 
-    return train_df, val_df, pca_train, pca_val, pca_train5, pca_val5, pca_train7, pca_val7, gmm_train, gmm_val, gmm_pca_train5, gmm_pca_val5, gmm_pca_train7, gmm_pca_val7
+    test_df = pd.read_parquet(TEST_DATA_PARQUET_PATH)
+
+    pca_test = pd.read_parquet(TEST_PCA_PARQUET_PATH)
+    pca_test5 = pca_test[[f"PC{i}" for i in range(1, 6)] + ["agtno"]]
+    pca_test7 = pca_test[[f"PC{i}" for i in range(1, 8)] + ["agtno"]]
+
+    gmm_test = pd.read_parquet(
+        gmm_dir / "X_gmm_test.parquet"
+    )[["agtno", "gmm_prob_0", "gmm_prob_1", "gmm_prob_2", "gmm_prob_3"]]
+
+    gmm_pca_test5 = pca_test5.merge(
+        gmm_test,
+        on="agtno",
+        how="inner",
+        validate="one_to_one",
+    )
+
+    gmm_pca_test7 = pca_test7.merge(
+        gmm_test,
+        on="agtno",
+        how="inner",
+        validate="one_to_one",
+    )
+
+    return (
+    train_df,
+    val_df,
+    test_df,
+    pca_train,
+    pca_val,
+    pca_test,
+    pca_train5,
+    pca_val5,
+    pca_test5,
+    pca_train7,
+    pca_val7,
+    pca_test7,
+    gmm_train,
+    gmm_val,
+    gmm_test,
+    gmm_pca_train5,
+    gmm_pca_val5,
+    gmm_pca_test5,
+    gmm_pca_train7,
+    gmm_pca_val7,
+    gmm_pca_test7)
 
 def split_data(df):
     """Separate raw features and log-transformed target."""
@@ -174,19 +219,40 @@ def evaluate(y_val, X_val, model, retailer_ids=None):
 
     return metrics_df, residuals_df
 
+def preprocess_evaluation_features(
+    X_raw,
+    preprocessor,
+    cols_to_drop=None,
+    feature_addition=None,
+):
+    X = preprocessor.transform(X_raw)
 
+    if feature_addition is not None:
+        X = merge_unsupervised_features(
+            X,
+            feature_addition,
+            X_raw["agtno"],
+        )
+
+    if cols_to_drop:
+        columns = [col for col in cols_to_drop if col in X.columns]
+        X = X.drop(columns=columns, errors="ignore")
+
+    return X.astype(float)
   
 if __name__ == "__main__":
 
     # Load raw data
-    train_df, val_df,\
-    pca_train, pca_val, pca_train5, pca_val5, pca_train7, pca_val7,\
-    gmm_train, gmm_val, gmm_pca_train5, gmm_pca_val5, gmm_pca_train7, gmm_pca_val7\
+
+    train_df, val_df, test_df,\
+    pca_train, pca_val, pca_test, pca_train5, pca_val5, pca_test5, pca_train7, pca_val7, pca_test7,\
+    gmm_train, gmm_val, gmm_test, gmm_pca_train5, gmm_pca_val5, gmm_pca_test5, gmm_pca_train7, gmm_pca_val7, gmm_pca_test7\
     = load_data()
 
     #Split raw data
     X_train_raw, y_train = split_data(train_df)
     X_val_raw, y_val = split_data(val_df)
+    X_test_raw, y_test = split_data(test_df)
 
     #Load the already-fitted preprocessor
     preprocessor = joblib.load(PREPROCESSOR_PATH)
@@ -210,9 +276,40 @@ if __name__ == "__main__":
                                          train_addition=gmm_pca_train5,
                                          val_addition=gmm_pca_val5)
 
-    # Fit Ridge on all training data
+    X_test = preprocess_evaluation_features(
+        X_raw=X_test_raw,
+        preprocessor=preprocessor,
+        cols_to_drop=cols_to_drop,
+        feature_addition=gmm_pca_test5,
+    )
+
+    if list(X_train.columns) != list(X_test.columns):
+        raise ValueError(
+            "Training and test feature columns do not match."
+        )
+
+    # Fit model
     ridge_model = fit_ridge(X_train, y_train)
     print(f"Selected alpha: {ridge_model.alpha_}")
+
+    # Test/validation log R²
+    test_metrics_df, test_residuals_df = evaluate(
+        y_val=y_val,
+        X_val=X_val,
+        model=ridge_model,
+        retailer_ids=val_df["agtno"].to_numpy(),
+    )
+    test_r2_log = test_metrics_df.loc[0, "r_squared_log"]
+
+    # Cross-validation log R²
+    cv_metrics = calculate_cv_r2(X_train, y_train)
+    cv_r2_log = cv_metrics["cv_r2_log_mean"]
+
+    print(f"Test R² log: {test_r2_log:.6f}")
+    print(
+        f"Cross-validation R² log: {cv_r2_log:.6f} "
+        f"+/- {cv_metrics['cv_r2_log_std']:.6f}"
+    )
 
     # Evaluate the fitted model on the full training set
     train_metrics_df, train_residuals_df = evaluate(
@@ -229,6 +326,17 @@ if __name__ == "__main__":
         model=ridge_model,
         retailer_ids=val_df["agtno"].to_numpy(),
     )
+
+    test_metrics_df, test_residuals_df = evaluate(
+        y_val=y_test,
+        X_val=X_test,
+        model=ridge_model,
+        retailer_ids=test_df["agtno"].to_numpy(),
+    )
+
+    test_r2_log = test_metrics_df.loc[0, "r_squared_log"]
+
+    print(f"Test R² log:       {test_r2_log:.6f}")
 
     # Calculate nested cross-validation R² on the training set
     cv_metrics = calculate_cv_r2(X_train, y_train)
