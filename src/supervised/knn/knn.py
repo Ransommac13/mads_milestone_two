@@ -12,16 +12,13 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score
-)
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GroupKFold, GridSearchCV
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 from scipy.stats import spearmanr
+import matplotlib.pyplot as plt
 
 from src.config import TRAIN_DATA_PARQUET_PATH, VALIDATION_DATA_PARQUET_PATH, TEST_DATA_PARQUET_PATH
 from src.config import TRAIN_PCA_PARQUET_PATH, VAL_PCA_PARQUET_PATH, TEST_PCA_PARQUET_PATH, GMM_PARQUET_DIR
@@ -50,6 +47,7 @@ FEATURE_SETS = {
 
 TARGET = 'avg_daily_sales'
 OUTPUT_DIR = Path("src/supervised/outputs/model outputs")
+FIGURE_PATH = Path("src/supervised/outputs/model figures")
 
 def split_data(df):
     """Separate raw features and log-transformed target."""
@@ -165,7 +163,7 @@ def evaluate_knn(model, X, y_log):
     }
 
 
-def run_knn_experiments(X_train, y_train, X_val, y_val, feature_sets,
+def run_knn_experiments(X_train, y_train, X_val, y_val, X_test, y_test, feature_sets,
                         categorical_columns, log_columns, group_column="tract_geoid", param_grid=None):
     """
     Tune and evaluate KNN for each feature set.
@@ -196,30 +194,82 @@ def run_knn_experiments(X_train, y_train, X_val, y_val, feature_sets,
 
         best_model = search.best_estimator_
         fitted_models[name] = best_model
+        best_idx = search.best_index_
 
         train_metrics = evaluate_knn(best_model, X_train[features], y_train)
         val_metrics = evaluate_knn(best_model, X_val[features], y_val)
+        test_metrics = evaluate_knn(best_model, X_test[features], y_test)
 
         results.append({
             "feature_set": name,
             "model": "knn",
             "best_params": search.best_params_,
             "cv_r2_log": search.best_score_,
-
-            **{
-                f"train_{key}": value
-                for key, value in train_metrics.items()
-            },
-
-            **{
-                f"val_{key}": value
-                for key, value in val_metrics.items()
-            }
+            "cv_std": search.cv_results_['std_test_score'][best_idx],
+            **{f"train_{key}": value for key, value in train_metrics.items()},
+            **{f"val_{key}": value for key, value in val_metrics.items()},
+            **{f"test_{key}": value for key, value in test_metrics.items()}
         })
 
     results_df = pd.DataFrame(results)
 
     return results_df, fitted_models
+
+def plot_predicted_vs_actual(y_log, predictions, title, path):
+
+    n_models = len(predictions)
+
+    fig, axes = plt.subplots(1, n_models, figsize=(5.5 * n_models, 5.5), sharex=True, sharey=True, squeeze=False)
+
+    axes = axes.flatten()
+    y_log = np.asarray(y_log).ravel()
+
+    low = min(y_log.min(), *[p.min() for p in predictions.values()])
+    high = max(y_log.max(), *[p.max() for p in predictions.values()])
+
+    for ax, (model_name, pred_log) in zip(axes, predictions.items()):
+
+        ax.hexbin(y_log, pred_log, gridsize=40, cmap="Blues", mincnt=1)
+        ax.plot([low, high], [low, high], color="red", linestyle="--", label="Perfect prediction")
+
+        ax.set_title(model_name)
+        ax.set_xlabel("Actual log (avg daily sales)")
+
+    axes[0].set_ylabel("Predicted log (avg daily sales)")
+    axes[0].legend(loc="upper left")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+def plot_residuals(y_log, predictions, title, path):
+
+    y_log = np.asarray(y_log).ravel()
+
+    n_models = len(predictions)
+    fig, axes = plt.subplots(n_models, 2, figsize=(11, 4 * n_models), squeeze=False)
+
+    for row, (model_name, pred_log) in zip(axes, predictions.items()):
+
+        pred_log = np.asarray(pred_log).ravel()
+        residuals = y_log - pred_log
+
+        row[0].scatter(pred_log, residuals, s=6, alpha=0.3)
+        row[0].axhline(0, color="red", linestyle="--")
+        row[0].set_xlabel("Predicted log(avg daily sales)")
+        row[0].set_ylabel(f"{model_name}\nResidual")
+        row[0].set_title("Residuals vs predicted")
+
+        row[1].hist(residuals, bins=50)
+        row[1].set_xlabel("Residual")
+        row[1].set_ylabel("Retailers")
+        row[1].set_title("Residual distribution")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
 
 if __name__ == '__main__':
 
@@ -233,20 +283,26 @@ if __name__ == '__main__':
     gmm_dir = Path(GMM_PARQUET_DIR)
     X_val_gmm = pd.read_parquet(gmm_dir / "X_gmm_val.parquet")[['agtno', 'gmm_prob_0', 'gmm_prob_1', 'gmm_prob_2', 'gmm_prob_3']]
 
+    X_test_orig = pd.read_parquet(TEST_DATA_PARQUET_PATH)
+    X_test_pca = pd.read_parquet(TEST_PCA_PARQUET_PATH)
+    gmm_dir = Path(GMM_PARQUET_DIR)
+    X_test_gmm = pd.read_parquet(gmm_dir / "X_gmm_test.parquet")[['agtno', 'gmm_prob_0', 'gmm_prob_1', 'gmm_prob_2', 'gmm_prob_3']]
+
     X_train_full = X_train_orig.merge(X_train_pca, on='agtno', how='inner', validate='one_to_one')
     X_train_full = X_train_full.merge(X_train_gmm, on='agtno', how='inner', validate='one_to_one')
-    
     X_val_full = X_val_orig.merge(X_val_pca, on='agtno', how='inner', validate='one_to_one')
     X_val_full = X_val_full.merge(X_val_gmm, on='agtno', how='inner', validate='one_to_one')
+    X_test_full = X_test_orig.merge(X_test_pca, on='agtno', how='inner', validate='one_to_one')
+    X_test_full = X_test_full.merge(X_test_gmm, on='agtno', how='inner', validate='one_to_one')
 
     X_train, y_train = split_data(X_train_full)
     X_val, y_val = split_data(X_val_full)
+    X_test, y_test = split_data(X_test_full)
     
     results_df, fitted_models = run_knn_experiments(
-        X_train=X_train,
-        y_train=y_train,
-        X_val=X_val,
-        y_val=y_val,
+        X_train=X_train, y_train=y_train,
+        X_val=X_val, y_val=y_val,
+        X_test=X_test, y_test=y_test,
         feature_sets=FEATURE_SETS,
         categorical_columns=CATEGORICAL_FEATURES,
         log_columns=LOG_FEATURES
@@ -265,4 +321,9 @@ if __name__ == '__main__':
 
     print("Best feature set:", best_feature_set)
 
+    predictions = {
+        "KNN": fitted_models["category_only"].predict(X_val)
+    }
 
+    #plot_predicted_vs_actual(y_val, predictions, "KNN: Predicted vs Actual Log Sales", FIGURE_PATH / "knn_predicted_vs_actual.png")
+    plot_residuals(y_val, predictions, "KNN Residual Diagnostics", FIGURE_PATH / "knn_residuals.png")
