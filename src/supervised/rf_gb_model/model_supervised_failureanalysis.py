@@ -8,6 +8,7 @@ This script will uses random forest and gradient boosting models to predict a re
 import pandas as pd
 import numpy as np
 import joblib
+from time import perf_counter
 
 from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
 from sklearn.inspection import permutation_importance
@@ -272,6 +273,42 @@ if __name__ == '__main__':
 
     for model_name, n_iter in [("random_forest", 10), ("gradient_boosting", 25)]:
         search = tune_model(model_name, best_kwargs, X_train, y_train, groups, n_iter)
+
+        # Accuracy and speed for every hyperparameter setting tested
+        tuning_results = pd.DataFrame(search.cv_results_)
+
+        tuning_tradeoff = tuning_results[
+            [
+                "params",
+                "mean_test_score",
+                "std_test_score",
+                "mean_fit_time",
+                "std_fit_time",
+                "mean_score_time",
+                "std_score_time",
+                "rank_test_score"
+            ]
+        ].copy()
+
+        tuning_tradeoff = tuning_tradeoff.rename(
+            columns={
+                "mean_test_score": "mean CV R2 (log)",
+                "std_test_score": "std CV R2 (log)",
+                "mean_fit_time": "mean fit time (s)",
+                "std_fit_time": "std fit time (s)",
+                "mean_score_time": "mean score time (s)",
+                "std_score_time": "std score time (s)",
+                "rank_test_score": "accuracy rank"
+            }
+        )
+
+        tuning_tradeoff.insert(0, "model", model_name)
+
+        tuning_tradeoff.to_csv(
+            OUTPUT / f"{model_name}_tuning_speed_accuracy.csv",
+            index=False
+        )
+
         pipeline = search.best_estimator_
         print(f"\n{model_name}: best settings: {search.best_params_}")
 
@@ -288,7 +325,18 @@ if __name__ == '__main__':
         joblib.dump(pipeline, OUTPUT / f"{model_name}_tuned.joblib")
 
 
+        #pred_val = pd.Series(pipeline.predict(X_val), index=y_val.index)
+
+        prediction_start = perf_counter()
         pred_val = pd.Series(pipeline.predict(X_val), index=y_val.index)
+        prediction_seconds = perf_counter() - prediction_start
+
+        # Add timing to the validation row most recently appended to rows
+        rows[-1]["prediction time (s)"] = prediction_seconds
+        rows[-1]["prediction time per row (ms)"] = (
+            prediction_seconds / len(X_val) * 1_000
+        )
+
         val_predictions[model_name] = pred_val
         
         #find features that matter most 
@@ -315,6 +363,27 @@ if __name__ == '__main__':
     
 
     results = pd.DataFrame(rows)
+
+    speed_accuracy = results.loc[
+    results["split"] == "validation",
+    [
+        "model",
+        "R2 (log)",
+        "MAE (log)",
+        "MAE ($)",
+        "prediction time (s)",
+        "prediction time per row (ms)"
+    ]
+    ].copy()
+
+    speed_accuracy.to_csv(
+        OUTPUT / "speed_accuracy_tradeoff.csv",
+        index=False
+    )
+
+    print("\nSpeed–accuracy tradeoff:")
+    print(speed_accuracy.round(4).to_string(index=False))
+
     results.drop(columns="best settings").round(3).to_csv(OUTPUT / "tuned_results.csv", index=False)
     results[["model", "best settings"]].dropna().to_csv(OUTPUT / "best_settings.csv", index=False)
 
