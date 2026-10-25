@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 from sklearn.linear_model import RidgeCV
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, cross_validate
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -85,25 +85,57 @@ def preprocess_features(X_train_raw, X_val_raw, preprocessor, cols_to_drop=None,
 
     return X_train, X_val
 
-
-def fit_ridge(X_train, y_train):
-    cv = KFold(
+def make_cv():
+    return KFold(
         n_splits=5,
         shuffle=True,
         random_state=42,
     )
 
-    model = make_pipeline(
-        StandardScaler(),
-        RidgeCV(
-            alphas=np.logspace(-4, 4, 100),
-            cv=cv,
-            scoring="neg_mean_squared_error",
-        ),
+def fit_ridge(X_train, y_train):
+    model = RidgeCV(
+        alphas=np.logspace(-4, 4, 100),
+        cv=make_cv(),
+        scoring="neg_mean_squared_error",
     )
 
     model.fit(X_train, y_train)
     return model
+
+def calculate_cv_r2(X_train, y_train):
+    """
+    Calculate held-out R² on the log-transformed target for each fold.
+
+    RidgeCV performs inner CV to choose alpha, while cross_validate performs
+    outer CV to estimate held-out performance.
+    """
+    model = RidgeCV(
+        alphas=np.logspace(-4, 4, 100),
+        cv=make_cv(),
+        scoring="neg_mean_squared_error",
+    )
+
+    cv_results = cross_validate(
+        model,
+        X_train,
+        y_train,
+        cv=make_cv(),
+        scoring="r2",
+        return_train_score=True,
+        n_jobs=-1,
+    )
+
+    return {
+        "cv_train_r2_log_mean": np.mean(cv_results["train_score"]),
+        "cv_train_r2_log_std": np.std(
+            cv_results["train_score"], ddof=1
+        ),
+        "cv_r2_log_mean": np.mean(cv_results["test_score"]),
+        "cv_r2_log_std": np.std(
+            cv_results["test_score"], ddof=1
+        ),
+        "cv_r2_log_folds": cv_results["test_score"],
+    }
 
 def evaluate(y_val, X_val, model, retailer_ids=None):
 
@@ -178,15 +210,74 @@ if __name__ == "__main__":
                                          train_addition=gmm_pca_train5,
                                          val_addition=gmm_pca_val5)
 
-    # Fit OLS on training data
+    # Fit Ridge on all training data
     ridge_model = fit_ridge(X_train, y_train)
-    ridge = ridge_model.named_steps["ridgecv"]
-    print(f"Selected alpha: {ridge.alpha_}")
+    print(f"Selected alpha: {ridge_model.alpha_}")
 
-    train_metrics_df, train_residuals_df = evaluate(y_val=y_train, X_val=X_train, model=ridge, retailer_ids=train_df['agtno'].to_numpy())
-    val_metrics_df, val_residuals_df = evaluate(y_val=y_val, X_val=X_val, model=ridge, retailer_ids=val_df['agtno'].to_numpy())
+    # Evaluate the fitted model on the full training set
+    train_metrics_df, train_residuals_df = evaluate(
+        y_val=y_train,
+        X_val=X_train,
+        model=ridge_model,
+        retailer_ids=train_df["agtno"].to_numpy(),
+    )
 
-    print("TRAIN", train_metrics_df)
-    print("VAL", val_metrics_df)
+    # Evaluate the fitted model on the separate validation set
+    val_metrics_df, val_residuals_df = evaluate(
+        y_val=y_val,
+        X_val=X_val,
+        model=ridge_model,
+        retailer_ids=val_df["agtno"].to_numpy(),
+    )
+
+    # Calculate nested cross-validation R² on the training set
+    cv_metrics = calculate_cv_r2(X_train, y_train)
+
+    # Extract the requested log-scale R² values
+    train_r2_log = train_metrics_df.loc[0, "r_squared_log"]
+    validation_r2_log = val_metrics_df.loc[0, "r_squared_log"]
+    cv_r2_log = cv_metrics["cv_r2_log_mean"]
+
+    print(f"Train R² log:      {train_r2_log:.6f}")
+    print(f"Validation R² log: {validation_r2_log:.6f}")
+    print(
+        f"Cross-validation R² log: {cv_r2_log:.6f} "
+        f"+/- {cv_metrics['cv_r2_log_std']:.6f}"
+    )
+    print(f"Cross-validation fold scores: {cv_metrics['cv_r2_log_folds']}")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    r2_summary_df = pd.DataFrame([{
+        "model": "Ridge",
+        "selected_alpha": ridge_model.alpha_,
+        "train_r2_log": train_r2_log,
+        "validation_r2_log": validation_r2_log,
+        "cv_train_r2_log_mean": cv_metrics["cv_train_r2_log_mean"],
+        "cv_train_r2_log_std": cv_metrics["cv_train_r2_log_std"],
+        "cv_r2_log_mean": cv_metrics["cv_r2_log_mean"],
+        "cv_r2_log_std": cv_metrics["cv_r2_log_std"],
+    }])
+
+    r2_summary_df.to_csv(
+        OUTPUT_DIR / "ridge_r2_summary.csv",
+        index=False,
+    )
+
+    train_metrics_df.to_csv(
+        OUTPUT_DIR / "ridge_train_metrics.csv",
+        index=False,
+    )
+
+    val_metrics_df.to_csv(
+        OUTPUT_DIR / "ridge_validation_metrics.csv",
+        index=False,
+    )
+
+    pd.DataFrame({
+        "fold": np.arange(1, len(cv_metrics["cv_r2_log_folds"]) + 1),
+        "cv_r2_log": cv_metrics["cv_r2_log_folds"],
+    }).to_csv(
+        OUTPUT_DIR / "ridge_cv_fold_scores.csv",
+        index=False,
+    )
