@@ -8,7 +8,6 @@ import argparse
 import numpy as np
 
 from pathlib import Path
-from src.05_aadt.ingest import OUTPUT_PATH
 from src.config import TRAIN_DATA_PARQUET_PATH, PROJECT_ROOT, TRAINING_MASTER_PARQUET_PATH, FLAG_CORRELATION_CSV_PATH
 
 OUTPUT_PATH = PROJECT_ROOT / FLAG_CORRELATION_CSV_PATH

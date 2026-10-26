@@ -2,7 +2,7 @@
 
 feature_set.py
 
-This module defines the feature set by which we want to define a lottery retailer's potential "archetype."
+This module includes helper functions for exploring unsupervised models.
 """
 
 import textwrap

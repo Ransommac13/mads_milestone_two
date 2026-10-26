@@ -3,6 +3,7 @@
 visualizations.py
 
 Pretty pictures!
+This module includes functions to create the core visualizations used for unsupervised model evaluation and understanding.
 """
 
 from pathlib import Path
@@ -17,7 +18,7 @@ import joblib
 from adjustText import adjust_text
 
 from src.config import TRAIN_PCA_PARQUET_PATH, GMM_PARQUET_DIR, TRAIN_DATA_PARQUET_PATH
-from src.07_unsupervised_clustering.preprocess import wac_feature_eng, select_features, build_preprocessing_pipeline, main_pipepline
+from src.unsupervised_clustering.a_preprocess import wac_feature_eng, select_features, build_preprocessing_pipeline, main_pipepline
 
 def pca_biplot(X_pca_train: pd.DataFrame, pca_model, feature_names, n_features=8, pc_x=1, pc_y=2):
 

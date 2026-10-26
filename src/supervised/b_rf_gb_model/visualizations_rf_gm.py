@@ -1,3 +1,11 @@
+"""
+
+visualizations_rf_gm.py
+
+This module includes functions that produce useful visualizations for understanding
+Random Forest and Gradient Boosting model results.
+"""
+
 import numpy as np 
 import pandas as pd
 import matplotlib 

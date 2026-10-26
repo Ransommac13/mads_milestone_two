@@ -1,3 +1,11 @@
+"""
+
+final_rf_gb_model_test.py
+
+This module is exclusively used to test tuned Random Forest and Graident Boosting models against the test set,
+output performance metrics, and produce explanatory visualizations.
+"""
+
 import pandas as pd
 import numpy as np
 import joblib

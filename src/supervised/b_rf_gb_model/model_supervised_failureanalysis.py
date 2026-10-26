@@ -1,4 +1,7 @@
 """
+
+model_supervised_failureanalysis.py
+
 This script will uses random forest and gradient boosting models to predict a retailer's avg daily lottery sales
 - Compare feature representations with grouped corss-validation 
 - tune models on the best representation 
