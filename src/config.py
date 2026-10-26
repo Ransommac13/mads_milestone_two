@@ -46,8 +46,8 @@ AADT_CSV_PATH = "data/external/aadt/Annual_Average_Daily_Traffic_AADT_Beginning_
 AADT_PARQUET_PATH = "data/interim/external/location_data_aadt.parquet"
 AADT_GDB_PATH = "data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip"
 
-LODES_WAC_CSV_PATH = "data/external/lodes/ny_wac_S000_JT00_2023.csv.gz"
-LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
+LODES_WAC_CSV_PATH = "data/raw/ny_wac_S000_JT00_2023.csv.gz"
+LODES_RAC_CSV_PATH = "data/raw/ny_rac_S000_JT00_2023.csv.gz"
 
 EPA_RAWCSV_PATH = "data/raw/EPA_NY.csv"
 

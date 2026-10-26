@@ -23,42 +23,77 @@ The primary dataset is the New York Lottery retailer sales dataset published thr
 
 The current analysis uses records from January 1 through December 31, 2025. Retailer-level location data and daily sales data are separated into related tables using agtno as the key.
 
-### Planned External Data
-- [US Census Bureau's ACS 5-Year Demographic Data](https://www.census.gov/data/developers/data-sets/acs-5year.2022.html#list-tab-1806015614)
-- [EPA Smart Locations](https://www.epa.gov/smartgrowth/smart-location-mapping#SLD)
-- [LODES](https://lehd.ces.census.gov/data/)
-- [Overture Map Data](https://docs.overturemaps.org/guides/places/)
-- [NYS Annual Average Daily Traffic](https://data.ny.gov/Transportation/Annual-Average-Daily-Traffic-AADT-Beginning-1977/6amx-2pbv/about_data)
+### External Data for use as Potential Predictive Features
+- [US Census Bureau's ACS 5-Year Demographic Data](https://api.census.gov/data/2024/acs/acs5.html)
+- [EPA Smart Locations](https://catalog.data.gov/dataset/smart-location-database)
+- [LODES](https://lehd.ces.census.gov/data/lodes/LODES8/ny/)
+- [Overture Map Data](https://docs.overturemaps.org/getting-data/cloud-sources/)
+- [NYS Annual Average Daily Traffic](https://www.dot.ny.gov/tdv)
+
+### How to Access Each Data Source
+- NY Lottery Retail Sales: Follow the environment setup instructions below to establish a Socrata client. Execute src.config then src.01_ingest to load the raw sales data. WARNING: Executing this module may take close to one hour due to the required volume of paginated API requests.
+- ACS 5-Year Demographic Data: Follow the environment setup instructions below to obtain an API Key. Execute src.config then src.05_acs.ingest to load raw ACS data.
+- EPA Smart Locations: see data/raw/EPA_NY.csv
+- LODES: see data/raw/ny_rac_S000_JT00_2023.csv.gz and data/raw/ny_wac_S000_JT00_2023.csv.gz
+- Overture Maps: Execute src.05_overture_places.ingest to query the Overture Places Amazon S3 repository. WARNING: Executing this module will take over one hour due to the computationally expensive process to filter places by information in two different Overture databases.
+- NYS AADT: At the bottom of the webpage provided, download "GDB Shapefile AADT 2024-2025.zip" onto your local computer. Move it into "{ide_project_folder}/data/external/GBD_Shapefile_AADT_2024-2025.gdb.zip".
 
 ## Repository Structure
 ### Shared Repository
 - data/
+    - raw/
     - interim/
     - final/
+    - modeling/
+    - geography/
     - corrections/
 - notebooks/
-- outputs/
 - src/
-    - data/
+    - 05_aadt/
+        - ingest_update
+    - 05_acs/
+        - ingest
+    - 05_epa/
+        - ingest
+    - 05_lodes/
+        - rac_ingest
+        - wac_ingest
+    - 05_overture_places
+        - 05a_ingest
+        - 05b_feature_eng
+    - supervised/
+        - a_preprocess_super
+        - b_train_ridge
+        - b_knn/
+            - knn
+        - b_rf_gb_model/
+            - b1_model_supervised.py
+    - unsupervised_clustering/
+        - a_preprocess
+        - b_gmm
     - config
-    - ingest
-    - location_sales_split
-    - locaiton_clean
+    - 01_ingest
+    - 02_location_sales_split
+    - 03_location_clean
+    - 04_sales_clean
+    - 06_merge_and_split
 - .gitignore
 - requirements.txt
 - README.md
 
 ### Excluded Data Files
-The complete 2025 sales dataset contains approximately 4.76 million records. Because the intermediate Parquet files are large and can be regenerated, they are not stored in GitHub.The following directories and files should remain excluded through .gitignore:
+The complete 2025 sales dataset contains approximately 4.76 million records. Because the intermediate Parquet files are large and can be regenerated, they are not stored in GitHub. Likewise, the AADT GDB shapefile and US Census Shapefile are excluded for large file sizes.
+The following directories and files should remain excluded through .gitignore:
 - data/interim/lottery_sales_2025
 - data/interim/combined_lottery_sales_2025.parquet
-
-Processed datasets may also be excluded if they exceed GitHub’s file-size limits or contain data that can be reproduced from the project pipeline.
+- data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip
+- data/external/census_shapefile/tl_2025_36_bg.zip
 
 ### Local Machine Files
 - .venv
 - .env
-- others
+- data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip
+- data/external/census_shapefile/tl_2025_36_bg.zip
 
 ## Environment Setup
 ### 1. Clone the repository
@@ -70,28 +105,46 @@ On Windows PowerShell:
 - .venv\Scripts\Activate.ps1
 ### 3. Install dependencies
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ### 4. Configure API access
-- Create an account on data.ny.gov
-- Navigate to developer settings and request an app token
-- Create a .env file in the project root:
-- SOCRATA_APP_TOKEN=your_data_ny_gov_app_token
-- Each contributor should use their own local .env file. The actual .env file must not be committed to GitHub.
+- Socrata
+    - Create an account on data.ny.gov
+    - Navigate to developer settings and request an app token
+    - Create a .env file in the project root:
+    - SOCRATA_APP_TOKEN=your_data_ny_gov_app_token
+    - Each contributor should use their own local .env file. The actual .env file must not be committed to GitHub.
+- US Census
+    - Request US Census API Key at https://api.census.gov/data/key_signup.html
+    - Copy the API Key sent to your email
+    - In your local .env file in the project root:
+    - ACS_API_KEY=your_us_census_api_key
+    - Each contributor should use their own local .env file. The actual .env file must not be committed to GitHub.
 
 ## Collaboration Best Practices
 ### Pushing Changes
 1. At the start of your session, pull in the updated repository.
-2. Make desired chagnes.
+2. Make desired changes.
 3. Before pushing, pull again to catch any recent updates.
-4. Commit and push one module at a time. If possible, commit and push one function change at a time.
+4. Commit and push one change at a time.
 
-## Data Pipeline
-1. Query the data.ny.gov API for 2025 sales records.
-2. Download the records in deterministic, paginated batches.
-3. Save each batch locally in Parquet format.
-4. Separate retailer-location attributes from daily sales observations. Use DuckDB to query the raw data so that all 4.76 million records do not need to be loaded into memory simultaneously. Save location data and sales data as intermediate Parquet files.
-5. (Clean retailer-location attributes to account for addresses with typos or other discrepancies.)
-6. (Clean sales data and aggregate into target period suitable for modeling.)
-7. (Match retailer coordinates to geospatial data from planned secondary sources.)
-8. (...)
+## Module Execution Order
+Execute in terminal with "python -m src.{file_path}". Do not include the .py suffix.
+1. config
+2. 01_ingest
+3. 02_location_sales_split
+4. 03_location_clean
+5. 04_sales_clean
+6. 05_aadt/ingest_update
+7. 05_acs/ingest
+8. 05_epa/ingest
+9. 05_lodes/rac_ingest
+10. 05_lodes/wac_ingest
+11. 05_overture_places/ingest
+12. 05_overture_places/feature_eng
+13. unsupervised_clustering/a_preprocess
+14. unsupervised_clustering/b_gmm
+15. supervised/a_preprocess_super
+16. supervised/b_train_ridge
+17. supervised/b_knn/knn
+18. supervised/b_rf_gb_model/b1_model_supervised
 
