@@ -1,8 +1,45 @@
 """
+Train, tune, and evaluate KNN regression models.
 
-knn.py
+This module implements KNN regression to predict log-transformed average daily
+New York Lottery sales. KNN provides an instance-based, nonparametric alternative
+to linear regression and tree-based ensembles, predicting sales from retailers
+with similar feature characteristics.
 
-Oh no! I'm an idiot, sorry!
+The module evaluates multiple feature configurations:
+    1. Categorical retailer characteristics only.
+    2. Original numerical features only.
+    3. Combined original numerical and categorical features.
+    4. Categorical features with PCA scores.
+    5. Categorical features with GMM membership probabilities.
+    6. Combined original, PCA, and GMM features.
+
+Hyperparameter tuning uses GridSearchCV with five-fold GroupKFold cross-validation,
+grouped by census tract to reduce geographic leakage. The search evaluates
+alternative neighbor counts, distance-weighting strategies, and Manhattan
+versus Euclidean distance metrics.
+
+When executed directly, the module:
+    1. Loads original retailer datasets, PCA scores, and GMM probabilities.
+    2. Merges engineered features using retailer identifiers (agtno).
+    3. Separates predictors and log1p-transformed sales targets.
+    4. Tunes KNN regressors across the specified feature configurations.
+    5. Evaluates each fitted model on training, validation, and test datasets.
+    6. Reports R², MAE, RMSE, and Spearman correlation on log and sales scales.
+    7. Exports model comparison results and saves the best fitted pipeline.
+    8. Generates residual diagnostic visualizations.
+
+The best feature configuration is selected using cross-validated R².
+Original-scale predictions are obtained using expm1 and clipped at zero.
+
+Inputs:
+    - Training, validation, and test retailer datasets (.parquet)
+    - Previously generated PCA scores and GMM probabilities (.parquet)
+
+Outputs:
+    - KNN model evaluation results (.csv)
+    - Best fitted KNN pipeline (.joblib)
+    - Residual diagnostic visualizations (.png)
 """
 
 from pathlib import Path
