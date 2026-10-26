@@ -35,8 +35,8 @@ The current analysis uses records from January 1 through December 31, 2025. Reta
 ### How to Access Each Raw Dataset
 - NY Lottery Retail Sales: Follow the environment setup instructions below to establish a Socrata client. Execute src.config then src.01_ingest to load the raw sales data. WARNING: Executing this module may take close to one hour due to the required volume of paginated API requests.
 - ACS 5-Year Demographic Data: Follow the environment setup instructions below to obtain an API Key. Execute src.config then src.05_acs.ingest to load raw ACS data.
-- EPA Smart Locations: see data/raw/EPA_NY.csv
-- LODES: see data/raw/ny_rac_S000_JT00_2023.csv.gz and data/raw/ny_wac_S000_JT00_2023.csv.gz
+- EPA Smart Locations: Download 'Resource 5' from the webpage provided. Move file into "{ide_project_folder}/data/raw/EPA_NY.csv".
+- LODES: Download rac/ny_rac_S000_JT00_2023.csv.gz and wac/ny_rac_S000_JT00_2023.csv.gz from the provided online repository. Move files into "{ide_project_folder}/data/raw/".
 - Overture Maps: Execute src.05_overture_places.ingest to query the Overture Places Amazon S3 repository. WARNING: Executing this module will take over one hour due to the computationally expensive process to filter places by information in two different Overture databases.
 - NYS AADT: At the bottom of the webpage provided, download "GDB Shapefile AADT 2024-2025.zip" onto your local computer. Move it into "{ide_project_folder}/data/external/GBD_Shapefile_AADT_2024-2025.gdb.zip".
 
