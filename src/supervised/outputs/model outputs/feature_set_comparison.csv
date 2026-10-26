@@ -1,13 +1,13 @@
 feature_set,model,cv R2 (log),train R2 (log),val R2 (log),val MAE (log),val Spearman,val MAE ($)
-category_only,random_forest,0.257,0.281,0.229,0.767,0.465,1398.324
-category_only,gradient_boosting,0.258,0.28,0.229,0.768,0.462,1402.55
-numeric_only,random_forest,0.045,0.288,0.044,0.856,0.182,1539.196
-numeric_only,gradient_boosting,0.028,0.213,0.028,0.864,0.15,1549.552
-original,random_forest,0.264,0.477,0.256,0.75,0.492,1381.403
-original,gradient_boosting,0.249,0.389,0.241,0.76,0.47,1400.664
-pca,random_forest,0.26,0.475,0.243,0.758,0.482,1390.27
-pca,gradient_boosting,0.244,0.382,0.236,0.763,0.474,1400.961
-gmm,random_forest,0.252,0.399,0.235,0.763,0.467,1393.955
-gmm,gradient_boosting,0.25,0.334,0.233,0.767,0.467,1401.633
-original_pca_gmm,random_forest,0.261,0.502,0.248,0.754,0.486,1386.201
-original_pca_gmm,gradient_boosting,0.248,0.417,0.24,0.761,0.475,1402.034
+category_only,random_forest,0.265,0.285,0.267,0.755,0.489,1411.095
+category_only,gradient_boosting,0.265,0.281,0.263,0.758,0.486,1419.278
+numeric_only,random_forest,0.047,0.288,0.04,0.873,0.173,1592.829
+numeric_only,gradient_boosting,0.029,0.215,0.02,0.883,0.136,1607.598
+original,random_forest,0.275,0.486,0.277,0.75,0.498,1404.368
+original,gradient_boosting,0.261,0.41,0.264,0.759,0.485,1423.508
+pca,random_forest,0.268,0.481,0.271,0.756,0.49,1419.259
+pca,gradient_boosting,0.252,0.389,0.254,0.767,0.473,1443.107
+gmm,random_forest,0.254,0.403,0.267,0.756,0.486,1414.19
+gmm,gradient_boosting,0.25,0.339,0.262,0.761,0.486,1426.852
+original_pca_gmm,random_forest,0.27,0.511,0.27,0.754,0.49,1413.886
+original_pca_gmm,gradient_boosting,0.256,0.426,0.267,0.759,0.486,1428.586

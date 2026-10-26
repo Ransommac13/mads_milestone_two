@@ -1,5 +1,5 @@
-model,split,MAE (log),RMSE (log),R2 (log),Spearman,MAE ($),RMSE ($),R2 ($),cv R2 (log),prediction time (s),prediction time per row (ms)
-random_forest,train,0.483,0.662,0.677,0.871,996.446,2174.452,0.432,,,
-random_forest,validation,0.747,0.986,0.257,0.496,1371.624,2576.965,0.139,0.267,0.02,0.007
-gradient_boosting,train,0.67,0.875,0.435,0.68,1302.556,2570.036,0.207,,,
-gradient_boosting,validation,0.751,0.988,0.254,0.488,1379.557,2612.43,0.115,0.261,0.021,0.007
+model,split,MAE (log),RMSE (log),R2 (log),Spearman,MAE ($),RMSE ($),R2 ($),cv R2 (log)
+random_forest,train,0.476,0.655,0.683,0.871,974.033,2177.353,0.426,
+random_forest,validation,0.746,0.978,0.279,0.503,1397.72,2524.596,0.16,0.278
+gradient_boosting,train,0.661,0.865,0.447,0.684,1276.404,2561.433,0.206,
+gradient_boosting,validation,0.751,0.98,0.275,0.495,1411.612,2567.328,0.132,0.271

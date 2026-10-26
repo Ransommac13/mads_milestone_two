@@ -5,7 +5,7 @@ config.py
 This module does two things. 
 1. It defines constants for file paths used in the project.
 2. It loads environment variables from a .env file,
-specifically the Socrata app token required for API access.
+specifically the Socrata app token and ACS API Key required for API access.
 """
 
 import os
@@ -48,7 +48,6 @@ AADT_GDB_PATH = "data/external/aadt/GDB_Shapefile_AADT_2024-2025.gdb.zip"
 
 LODES_WAC_CSV_PATH = "data/external/lodes/ny_wac_S000_JT00_2023.csv.gz"
 LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT00_2023.csv.gz"
-#LODES_RAC_CSV_PATH = "data/external/lodes/ny_rac_S000_JT01_2023.csv.gz"
 
 EPA_RAWCSV_PATH = "data/raw/EPA_NY.csv"
 
@@ -62,8 +61,8 @@ TRAIN_DATA_PARQUET_PATH = "data/modeling/train_data.parquet"
 VALIDATION_DATA_PARQUET_PATH = "data/modeling/val_data.parquet"
 TEST_DATA_PARQUET_PATH = "data/modeling/test_data.parquet"
 
-FLAG_CORRELATION_CSV_PATH = "src/correlation_test/high_correlation_test.csv"
-TARGET_CORRELATION_CSV_PATH = "src/correlation_test/target_correlation_test.csv"
+FLAG_CORRELATION_CSV_PATH = "src/zz_correlation_test/high_correlation_test.csv"
+TARGET_CORRELATION_CSV_PATH = "src/zz_correlation_test/target_correlation_test.csv"
 
 TRAIN_PCA_PARQUET_PATH = "data/modeling/pca/X_pca_train.parquet"
 VAL_PCA_PARQUET_PATH = "data/modeling/pca/X_pca_val.parquet"
