@@ -10,6 +10,8 @@ The project is being completed as part of the University of Michigan Master of A
 The intended result is an academically defensible analysis of retail location performance rather than a production-ready commercial forecasting system.
 
 ## Data Sources
+100-record samples of all raw data can be found in data/raw/hundred_record_samples.
+
 ### New York Lottery Retailer Sales
 Data Source: https://data.ny.gov/Government-Finance/Lottery-Daily-Retailer-Sales-By-Game-Beginning-202/xyvi-fbb9/about_data
 
@@ -30,7 +32,7 @@ The current analysis uses records from January 1 through December 31, 2025. Reta
 - [Overture Map Data](https://docs.overturemaps.org/getting-data/cloud-sources/)
 - [NYS Annual Average Daily Traffic](https://www.dot.ny.gov/tdv)
 
-### How to Access Each Data Source
+### How to Access Each Raw Dataset
 - NY Lottery Retail Sales: Follow the environment setup instructions below to establish a Socrata client. Execute src.config then src.01_ingest to load the raw sales data. WARNING: Executing this module may take close to one hour due to the required volume of paginated API requests.
 - ACS 5-Year Demographic Data: Follow the environment setup instructions below to obtain an API Key. Execute src.config then src.05_acs.ingest to load raw ACS data.
 - EPA Smart Locations: see data/raw/EPA_NY.csv

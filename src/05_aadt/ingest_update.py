@@ -12,6 +12,8 @@ import numpy as np
 import re
 
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from src.config import FINAL_LOCATION_PARQUET_PATH, AADT_GDB_PATH, AADT_GDB_PARQUET_PATH, PROJECT_ROOT
 OUTPUT_PATH = PROJECT_ROOT / AADT_GDB_PARQUET_PATH
@@ -135,7 +137,7 @@ if __name__ ==  "__main__":
 
     # load AADT road traffic data
     roads = load_road_segemnts(AADT_GDB_PATH, AADT_YEAR )
-
+    
     #load retailer locations and turn longitude and latitude into map points
     points = load_retailer(FINAL_LOCATION_PARQUET_PATH)
 
@@ -152,10 +154,7 @@ if __name__ ==  "__main__":
     validation_results = check_merge(enriched_locations)
     print(validation_results)
 
-    # print(enriched_locations[["agtno", "aadt_lanes"]].dropna().head(10))
-
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
-    # enriched_locations.to_parquet(str(OUTPUT_PATH), index=False)
     enriched_locations.drop(columns="geometry").to_parquet(OUTPUT_PATH, index=False)
     print(f"saved: {OUTPUT_PATH}")
 

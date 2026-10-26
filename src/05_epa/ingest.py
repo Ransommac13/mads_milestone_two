@@ -49,7 +49,5 @@ if __name__ == '__main__':
     epa_process_df = process_epa(epa_df)
     epa_merge_df = merge_epa(location_data, epa_process_df)
 
-    #epa_merge_df.to_parquet('data/interim/external/merged_with_loc/location_data_epa.parquet', index=False)
-
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok = True)
     epa_merge_df.to_parquet(str(OUTPUT_PATH), index=False)
